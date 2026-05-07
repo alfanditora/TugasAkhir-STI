@@ -4,7 +4,120 @@
 \cleardoublepage
 \chapter{PERANCANGAN}
 \label{chap:perancangan}
-Ilustrasikan desain konsep solusi dalam bentuk model konseptual dan penjelasan secara ringkas, 
-beserta perbedaannya dengan sistem saat ini. Ilustrasi harus dapat dibandingkan (\textit{before} and \textit{after}). 
-Karena masih berupa proposal, bab ini hanya berisi gambar desain konsep solusi tersebut dan 
-penjelasan perbandingannya dengan gambar sistem yang ada saat ini (yang tergambar di awal Bab \ref{chap:analisis-masalah}).
+
+\section{Diagram Konseptual Sistem}
+Dari solusi yang telah dipilih pada bagian sebelumnya, bagian ini akan menjelaskan mengenai perbandingan alur pencarian foto pribadi sebelum dan sesudah pengembangan sistem pencarian foto pribadi berdasarkan \textit{selfie} dari sisi pengguna.
+
+\subsection{Sistem Sebelum (\textit{As-Is})}
+Alur pencarian foto yang konvensional saat ini ditunjukkan pada Gambar \ref{fig:Alur Sistem As-Is}. Alur dimulai dengan mengakses penyimpanan yang dapat berupa folder/\textit{drive}. Selanjutnya untuk masing-masing \textit{file} foto, akan dicek satu-satu untuk melihat apakah foto yang sedang dibuka tersebut adalah foto pribadi atau bukan. Ketika foto yang dibuka merupakan foto pribadi, foto tersebut akan dipisahkan atau ditandai untuk disimpan pada ruang pernyimpanan yang terpisah. Apabila foto bukan foto pribadi, akan dilanjutkan dengan membuka \textit{file} foto selanjutnya hingga semua foto sudah dicek.
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Alur Sistem \textit{As-Is}} 
+	\label{fig:Alur Sistem As-Is}
+    	\includegraphics[width=0.7\textwidth]{images/B4-As Is.png}
+\end{figure}
+
+Berdasarkan alur pencarian tersebut, sistem saat ini memiliki dua keterbatasan. Pertama, waktu yang diperlukan untuk melakukan cek untuk setiap foto dapat menjadi terlalu lama untuk jumlah foto yang banyak. Terakhir, rawan terjadi kesalahan ketika melakukan cek karena foto yang terlalu banyak dapat membingungkan, sehingga dapat mengakibatkan \textit{miss}.
+
+\subsection{Sistem Sesudah (\textit{To-Be})}
+
+Sistem pencarian foto pribadi yang diusulkan ditunjukkan pada Gambar \ref{fig:Alur Sistem To-Be}. Sistem ini mengembangkan algoritma \textit{face recognition} dengan menggunakan \textit{one-shot learning}. Dengan adanya sistem ini, alur iterasi yang tidak perlu dilakukan oleh pengguna akan dilakukan secara otomatis oleh sistem.
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Alur Sistem \textit{To-Be}} 
+	\label{fig:Alur Sistem To-Be}
+    	\includegraphics[width=0.7\textwidth]{images/B4-To Be.png}
+\end{figure}
+
+Alur dimulai dengan memasukkan folder foto dengan mengunggah menggunakan \textit{file .zip} atau dengan tautan untuk \textit{drive}. Kemudian, pengguna melakukan foto \textit{selfie} untuk diunggah kedalam sistem. Dari masukan tersebut, sistem kemudian akan memproses pencarian foto pribadi berdasarkan dengan wajah yang ada di dalam foto \textit{selfie}. Terakhir, keluaran dari sistem adalah folder foto pribadi yang berhasil disaring dari masukan awal.
+
+\subsection{Perbandingan Sistem \textit{As-Is} dan \textit{To-Be}}
+
+Perbandingan antara sistem konvensional (\textit{As-Is}) dengan sistem yang diusulkan (\textit{To-Be}) ditunjukkan pada Tabel \ref{tab:perbandingan sistem}.
+
+\input{tables/sys-comparison-table.tex}
+
+\section{Penjelasan Desain Solusi Sistem}
+
+Berdasarkan alur sistem dari sisi pengguna di bagian sebelumnya, alur kerja dimulai dari \textit{preprocessing} yang ditunjukkan oleh Gambar \ref{fig:Alur Sistem Preprocessing}. Folder atau \textit{drive} yang telah dimasukkan pengguna akan dilakukan pemrosesan oleh model \textit{face recognition}, dimulai dari \textit{face detection}, \textit{face alignment}, dan \textit{face representation}. Hasilnya vektor konversi dari setiap foto akan disimpan pada \textit{database} beserta dengan informasi \textit{bounding box} dan \textit{path file}nya.
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Alur \textit{Preprocessing} Sistem} 
+	\label{fig:Alur Sistem Preprocessing}
+    	\includegraphics[width=0.7\textwidth]{images/B4-Preprocessing.png}
+\end{figure}
+
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Alur Sistem (\textit{query})} 
+	\label{fig:Alur Sistem Query}
+    	\includegraphics[width=0.7\textwidth]{images/B4-Desain Sistem (Query).png}
+\end{figure}
+
+
+Setalah \textit{preprocessing} dilakukan, selanjutnya dilakukan penyaringan berdasarkan foto \textit{selfie} yang dimasukkan pengguna sebagai \textit{query}. Foto \textit{selfie} akan diproses oleh model, sehingga bisa didapatkan hasil vektor dari foto tersebut. Hasil tersebut akan dilakukan \textit{face matching} dengan data yang telah ada di dalam \textit{database}. Apabila hasil \textit{matching} itu melebihi \textit{threshold}, foto itu akan ditampilkan sebagai foto pribadi dari pengguna. Semua foto tersebut akan dikumpulkan sebagai keluaran dari \textit{query}. Alur sistem \textit{query} ditunjukkan pada Gambar \ref{fig:Alur Sistem Query}.
+
+\section{Algoritma \textit{Face Recognition}}
+
+Berdasarkan hasil solusi, fokus eksplorasi selanjutnya berada pada penentuan algoritma \textit{face recognition} yang paling akurat.  Bagian ini akan menjelaskan bagian eksplorasi yang akan dibandingkan dari algoritma \textit{face recognition} yang ada.
+
+\subsection{Eksplorasi Algoritma Solusi}
+Seperti yang telah diketahui dari Bagian II.2, \textit{face recognition} terbagi menjadi empat blok komponen, \textit{face detection}, \textit{preprocessing and alignment}, \textit{face representation}, dan \textit{face matching}. Berdasarkan bagian II.3, dapat didebatkan bahwa komponenen inti dari sistem \textit{face recognition} adalah \textit{face representation}. Komponen tersebut menentukan keberhasilan setiap tahap dalam proses identifikasi maupun verfikasi. Berarti, komponen tersebut memainkan peran penting yang nantinya akan terpengaruh ke tingkat akurasi dan waktu kompleksitas dari algoritma \textit{face recognition}.
+
+Eksplorasi yang dilakukan dalam algoritma \textit{face recognition} akan dilakukan pada komponen \textit{face representation}. Dalam eksplorasi, akan dilakukan perbandingan baik dari metode tradisional hingga metode yang paling modern. Tujuan eksplorasi ini adalah untuk menemukan metode yang paling efektif dan akurat dalam mendeteksi serta mengenali wajah pada kondisi foto yang bervariasi, sesuai dengan Rumusan Masalah kedua.
+
+Berdasarkan studi literatur pada Bagian II.3, terdapat lima kategori utama metode yang akan dieksplorasi dan dibandingkan kinerjanya dalam konteks \textit{one-shot learning} (OSL) untuk pencarian foto pribadi:
+
+\begin{enumerate}
+  \item Metode Berbasis Geometri (\textit{Geometry-based Methods})
+  \item Metode Holistik (\textit{Holistic Methods})
+  \item Metode Berbasis Fitur (\textit{Feature-based Methods})
+  \item Metode Hibrida (\textit{Hybrid Methods})
+  \item Metode Deep Learning (\textit{Deep Learning Methods})
+\end{enumerate}
+
+Dari berbagai metode tersebut, masing-masing metode memiliki banyak pendekatan. Oleh karena itu, dalam eksplorasi Tugas Akhir akan membandingkan pendekatan-pendekatan tersebut sehingga mendapatkan pendekatan terbaik disetiap metodenya. Kemudian, pendekatan terbaik disetiap metode akan dibandingkan kembali dengan metode lainnya, sehingga bisa mendapatkan algoritma \textit{face recognition} yang cocok dengan sistem yang dikembangkan. 
+
+\subsection{Parameter Perbandingan}
+
+Pada eksplorasi algoritma solusi, diperlukan parameter perbandingan yang bertujuan untuk menentukan algoritma yang terbaik. Parameter tersebut akan menjadi dasar dipilihnya algoritma yang akan dipilih pada sistem yang akan dibangun. Harapannya parameter tersebut dapat menjadi landasan evaluasi yang objektif dan terukur, sehingga setiap hasil dari algoritma setara dan diukur dalam metrik yang standar.
+
+Dalam perbandingan, jumlah \textit{dataset} yang digunakan sebagai \textit{test case} sebaiknya standar. Jumlah \textit{dataset} yang akan digunakan sebagai perbandingan algoritma adalah sebanyak 1000 foto, dengan \textit{test case} yang sama untuk masing-masing algoritma.
+
+\begin{enumerate}
+  \item \textbf{Waktu Komputasi} \\
+  Analisis waktu komputasi akan dilakukan dengan mencakup tahap \textit{preprocessing}, \textit{feature extraction}, dan \textit{matching}. Pendekatan ini bertujuan untuk mengisolasi kinerja algoritma \textit{face representation} yang menjadi fokus dari proses pendukung lainnya. Dengan jumlah \textit{dataset} \textit{test case} yang standar, hasil dari pengukuran akan menjadi lebih objektif dan setara.
+
+  \item \textbf{Akurasi} \\
+  Selain dari pengukuran waktu, akurasi diperlukan sebagai dasar validitas fungsional sistem. Pengukuran ini mengacu pada metrik standar seperti \textit{True Accept Rate}, \textit{False Accept Rate}, dan sebagainya. Untuk mendukung pengukuran ini, \textit{dataset} pengujian (\textit{test case}) harus memiliki anotasi label yang valid sebagai kebenaran dasar (\textit{Ground Truth}). Hal ini memastikan bahwa setiap hasil prediksi algoritma dapat dibandingkan secara presisi terhadap identitas yang sebenarnya.
+  
+  \item \textbf{Kompleksitas Model} \\
+  Parameter kompleksitas dievaluasi untuk mengukur viabilitas implementasi (\textit{feasibility}). Terdapat dua pengukuran yang dilakukan, yaitu \textit{memory footprint} dan dependensi perangkat keras (CPU, GPU, dan sebagainya), Hal ini dilakukan untuk memastikan bahwa perbandingan antar algoritma adil dari sisi konsumsi sumber daya. Dengan demikian, dapat ditentukan apakah algoritma tersebut cocok diterapkan pada lingkungan dengan sumber daya terbatas.
+
+\end{enumerate}
+
+\section{Rencana Pengujian Sistem}
+
+Bagian ini akan menjelaskan mengenai rencana pengujian sistem yang akan dikembangkan. Bagian ini berisi penjelasan metode pengujian dan parameter keberhasilan yang digunakan.
+
+\subsection{Metode Pengujian}
+
+Metode pengujian yang digunakan untuk menguji sistem yang dikembangkan memiliki dua tujuan, yaitu menguji fungsionalitas dan menguji performa. Berikut empat pengujian yang akan dilakukan pada tugas sistem yang dikembangkan di Tugas Akhir ini:
+
+\begin{enumerate}
+    \item Pengujian Fungsional \\
+    Pengujian ini dilakukan untuk memastikan sistem dapat menerima \textit{input} folder, memproses foto \textit{selfie}, dan menghasilkan keluaran foto pribadi tanpa terjadi kegagalan sistem.
+    \item Pengujian Akurasi \\
+    Pengujian ini dilakukan untuk mengukur akurasi sistem dalam menyaring foto pribadi dengan membandingkannya pada \textit{ground truth} yang ada.
+    \item Pengujian Performa \\
+    Pengujian ini dilakukan untuk menghitung waktu rata-rata yang dibutuhkan sistem untuk memproses masukan foto dari pengguna.
+    \item Pengujian Stabilitas \\
+    Pengujian ini dilakukan untuk menguji ketahanan sistem dengan masukan yang rusak untuk memastikan sistem dapat tetap berjalan. 
+\end{enumerate}
+
+
+\subsection{Parameter Keberhasilan}
+
+Parameter keberhasilan diformulasikan dengan menurunkan dari non-fungsional \textit{requirement}. Sistem dinyatakan berhasil jika memenuhi indikator yang ditunjukkan pada Tabel \ref{tab:indikator keberhasilan}.
+
+\input{tables/kpi-table.tex}
