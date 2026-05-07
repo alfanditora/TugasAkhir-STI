@@ -1,0 +1,24 @@
+\begin{table}[h]
+	\caption{Perbandingan Peluang Teknologi}
+\label{tab:alternatif_solusi}
+\begin{tabular}{ | p{2cm} | p{4cm} | p{4cm} | p{2cm} | }
+    \hline
+    \textbf{Alternatif Solusi} & \textbf{Kelebihan} & \textbf{Kekurangan} & \textbf{Relevansi} \\ \hline
+    
+    1. Berbasis Konten Citra (CBIR) 
+    & Dapat diterapkan tanpa memerlukan anotasi manual. 
+    & Hanya mengukur kesamaan visual secara umum, tidak dapat mengukur kesamaan identitas wajah pengguna. Rentan terhadap foto yang berbeda orang tetapi memiliki latar atau pencahayaan serupa. 
+    & Rendah \\ \hline
+    
+    2. Berbasis Atribut Semantik 
+    & Mampu mempersempit hasil pencarian berdasarkan ciri kontekstual (misalnya, di pantai, memakai kacamata). 
+    & Tidak mampu memastikan identitas pengguna secara biometrik karena fokusnya bukan pada wajah melainkan konteks visual. 
+    & Rendah \\ \hline
+    
+    3. Berbasis \textit{Face Recognition}
+    & Kemampuan identifikasi yang spesifik terhadap individu. Tingkat akurasi tinggi dan kemudahan penerapan pada \textit{dataset} berskala besar. Mendukung paradigma \textit{one-shot query}. 
+    & Memerlukan komputasi yang lebih tinggi dibandingkan pendekatan lain. Kinerja dapat menurun saat dihadapkan pada foto dengan variasi ekstrem (pencahayaan, pose, oklusi). 
+    & Tinggi (Solusi Pilihan) \\ \hline
+
+  \end{tabular}
+\end{table}

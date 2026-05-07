@@ -7,31 +7,79 @@
 \cleardoublepage
 \chapter{ANALISIS MASALAH}
 \label{chap:analisis-masalah}
-Bab ini membahas analisis masalah yang ada pada sistem saat ini, analisis kebutuhan yang diperlukan
-untuk menyelesaikan masalah tersebut, serta analisis pemilihan solusi yang diusulkan. Secara garis besar,
-bab ini membahas hal-hal berikut:
-\begin{enumerate}[1.]
-    \item Deskripsi hasil analisis dari persoalan yang sedang ditangani dalam TA;
-    \item Penjelasan tentang solusi yang ditawarkan (dapat berupa algoritma, konsep desain, formula, atau gabungannya) 
-    pada level konsep dan detail yang cukup untuk merealisasikan solusinya; dan
-    \item Penjelasan tentang pendekatan yang dipilih dalam menyelesaikan persoalan TA.
-\end{enumerate}
-Subbab-subbab dalam bab ini dapat disesuaikan dengan kebutuhan topik TA yang dibahas. Berikut adalah contoh pembagian subbab
-yang dapat digunakan sebagai referensi (judul subbab dapat diubah sesuai dengan hal yang hendak dibahas dalam subbab tersebut).
 
 \section{Analisis Kondisi Saat Ini}
-Menurut \textcite{laudon2020}, gambarkan terlebih dahulu model konseptual sistem yang ada saat ini. Model konseptual ini berisi berbagai komponen atau subsitem dan interaksi antarsubsistem tersebut. Setelah itu, berikan penjelasan tentang masalah yang ada pada sistem tersebut. Paragraf berikut berisi contoh penjabaran masalah sistem informasi fasilitas kesehatan untuk pasien \autocite{pressman2019}. 
+
+Bagian ini akan menjelaskan hasil analisis dari kondisi saat ini terkait dengan pencarian foto pribadi. Foto pribadi yang dimaksud pada Tugas Akhir merupakan foto yang mengandung wajah dari pemilik foto tersebut.
+
+\subsection{Analisis Proses Bisnis Pencarian Foto Pribadi}
+Pada kondisi saat ini, pengguna digital sering kali memiliki kumpulan foto yang disimpan dalam ruang penyimpanan lokal ataupun \textit{cloud}. Dengan meningkatnya jumlah foto yang disimpan dalam ruang penyimpanan tersebut, semakin sulit bagi pengguna untuk mengelolanya, apalagi jika ruang penyimpanan menyimpan selain foto pengguna. Ketika pengguna ingin mencari foto pribadi (Foto yang mengandung wajah diri pengguna) dari ruang penyimpanan tersebut, pengguna akan kesulitan untuk menyaring antara foto pribadi dengan foto lainnya. Oleh karena itu, diperlukan analisis mendalam untuk mengetahui perilaku pengguna dalam menyaring foto tersebut.
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Alur Pencarian Foto dari Ruang Penyimpanan} 
+	\label{fig:pencarian foto}
+    	\includegraphics[width=0.7\textwidth]{images/B3-Kondisi Saat Ini.png}
+\end{figure}
+
+Dari gambar \ref{fig:pencarian foto}, proses pencarian/penyaringan foto pribadi masih dilakukan secara manual. Pengguna harus melakukan iterasi dengan membuka \textit{file} foto dan melakukan cek apakah foto tersebut foto pribadi atau bukan (Yang mengandung wajah diri pengguna). Proses iterasi ini berlangsung lama, karena iterasi akan terus dilakukan hingga foto pada ruang penyimpanan sudah dicek semua. Hal ini akan menimbulkan masalah apabila jumlah foto dalam ruang penyimpanan sangat banyak, akibatnya pengguna akan mengalami kerugian waktu dengan melakukan proses penyaringan tersebut. Foto yang sudah dicek dan merupakan foto pribadi selanjutnya akan dipisahkan dari ruang penyimpanan. Pengguna dapat membuat folder atau album baru yang kemudian diisi dengan foto pribadinya.
+
+Proses pencarian/penyaringan foto secara manual ini memiliki kekurangan. Dengan meningkatnya jumlah foto dalam ruang penyimpanan, maka akan semakin lama juga proses pencariannya. Pengguna perlu meluangkan waktu hanya untuk membuka dan melakukan cek terhadap foto yang disimpan. Selain itu, proses ini rawan terjadi kesalahan dalam penyaringan fotonya. Jumlah foto yang banyak dapat membuat pengguna kebingungan dan lupa dengan foto yang sudah di cek dan foto pribadi dari ruang penyimpanan. Akibatnya, pengguna bisa mengulangi proses cek terhadap foto yang sudah di cek sebelumnya. Kedua masalah tersebut akan rawan terjadi seiring dengan meningkatnya jumlah foto yang disimpan dalam ruang penyimpanan.
+
 \section{Analisis Kebutuhan}
-\lipsum[4]
-\subsection{Identifikasi Masalah Pengguna}
-\lipsum[5]
+Berdasarkan hasil analisis kondisi saat ini dari sistem, maka akan dilakukan penyusunan kebutuhan (\textit{Requirement}) untuk membantu dalam perancangan solusi. Kebutuhan akan dibagi menjadi dua, yaitu kebutuhan fungsional (\textit{Functional Requirement}) dan kebutuhan nonfungsional (\textit{Non-Functional Requirement}).
+
 \subsection{Kebutuhan Fungsional}
-\lipsum[6]
+Berdasarkan hasil analisis kondisi, diperlukan suatu sistem yang dapat menyelesaikan permasalahan utama yang didapat. Sistem yang dirancang harus dapat memudahkan dan memangkas waktu tunggu pengguna dalam mencari/menyaring foto pribadi yang disimpan baik dalam ruang penyimpanan lokal ataupun \textit{cloud}. 
+
+Kebutuhan fungsional mencakup fungsi-fungsi utama yang harus dimiliki oleh sistem dalam memenuhi tujuan penggunaannya. Kebutuhan fungsional sistem yang dirancang harus dapat menerima kumpulan foto pengguna dalam satu masukan untuk nantinya dilakukan penyaringan didalamnya. Selanjutnya, sistem harus dapat mengidentifikasi foto pribadi dari kumpulan foto yang didapat dari masukan pengguna sebelumnya. Terakhir, sistem harus dapat memisahkan foto pribadi yang telah diidentifikasi dan memasukkanya dalam satu daftar sebagai keluaran dari sistem, sehingga pengguna dapat mengunduh hasil pencarian/penyaringan. Semua kebutuhan fungsional tersebut telah dirangkum dan diberi kode identifikasi dalam Tabel \ref{tab:kebutuhan fungsional} untuk memudahkan dalam dokumentasi.
+
+\input tables/FR-table.tex
+
 \subsection{Kebutuhan Nonfungsional}
-\lipsum[7]
+Selain fungsi-fungsi utama sistem yang telah didefinisikan sebelumnya, diperlukan kebutuhan nonfungsional sebagai fungsi pendukung untuk menentukan bagaimana sistem harus beroperasi. Kebutuhan ini berupa kebutuhan nonfungsional yang mencakup karakteristik kualitas dan batasan sistem. Kebutuhan nonfungsional mencakup aspek \textit{Performance} (kinerja), \textit{reliability} (keandalan), dan \textit{scalability} (skalabilitas). Semua kebutuhan nonfungsional telah dirangkum dan diberi kode identifikasi dalam Tabel \ref{tab:kebutuhan nonfungsional} untuk memudahkan dalam dokumentasi.
+
+\input tables/NF-table.tex
+
+\subsection{\textit{Use Case} Diagram}
+Berdasarkan kebutuhan fungsional yang telah didefinisikan, diperlukan analisis untuk mengetahui bagaimana fungsionalitas sistem dari perspektif pengguna. Untuk menggambarkannya, digunakan \textit{use case} diagram yang menjelaskan apa yang dapat dilakukan pengguna terhadap sistem. Diagram ini menunjukkan hubungan antara aktor (pengguna) dengan \textit{use case} (fungsi utama) yang dapat dilakukan oleh sistem.
+
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{\textit{Use Case} Diagram} 
+	\label{fig:use case}
+    	\includegraphics[width=0.7\textwidth]{images/AN-Use Case Diagram.png}
+\end{figure}
+
+Pada Gambar \ref{fig:use case}, diagram tersebut menggambarkan interaksi antara pengguna dengan sistem pencarian foto pribadi. Pengguna disini berperan sebagai aktor utama yang memulai alur dengan mengunggah kumpulan foto yang ingin diproses. Sistem kemudian akan melakukan identifikasi foto pribadi dari daftar foto yang sudah dimasukkan sebelumnya. Apabila foto merupakan daftar pribadi, sistem akan memisahkannya dan menyimpan foto hasil identifikasi tersebut. Ketika hasil identifikasi selesai, pengguna dapat melihat hasil pencarian dari kumpulan foto yang telah dimasukkan sebelumnya. Diagram ini menunjukkan bahwa sistem akan dirancang secara otomatis dan berurutan mulai dari masukan foto pengguna hingga menampilkan hasil pencarian, ini bertujuan untuk memudahkan dan mengurangi waktu yang diperlukan pengguna dalam proses pencarian foto pribadi.
 
 \section{Analisis Pemilihan Solusi}
-\subsection{Alternatif Solusi}
-\lipsum[8]
+Untuk memenuhi kebutuhan sistem yang telah didefinisikan, diperlukan solusi terbaik yang dapat memenuhi aspek fungsional dan nonfungsional. Perancangan solusi akan menghasilkan alternatif-alternatif solusi, sehingga perlu untuk melakukan analisis dan penilaian untuk tiap alternatif solusi yang ada. Dengan demikian, solusi yang terbaik yang dipilih dapat menjawab tujuan dari sistem yang ingin dikembangkan.
+
+\subsection{Peluang Teknologi}
+Setelah melakukan berbagai eksplorasi terhadap peluang penggunaan teknologi untuk menyelesaikan kebutuhan utama, terdapat tiga peluang penggunaan teknologi yang mungkin digunakan.
+
+\begin{enumerate}
+    
+    \item \textbf{Pendekatan Berbasis Konten Citra (\textit{Content-Based Image Retrieval} / CBIR)} \\
+    Cara kerja pendekatan ini dengan membandingkan karakteristik visual dari foto, seperti warna dominan, tekstur, bentuk, atau pola visual lainnya. Dengan membandingkan karakteristik tersebut, sistem dapat menemukan foto yang secara visual mirip dengan contoh yang diberikan. Kelebihan dari pendekatan ini adalah dapat diterapkan tanpa memerlukan anotasi manual. Kelemahan dari pendekatan ini adalah CBIR hanya dapat mengukur kesamaan visual secara umum, sehingga tidak bisa mengukur kesamaan identitas wajah pengguna. Dua foto yang menampilkan orang berbeda tetapi memiliki pencahayaan atau latar serupa bisa saja dianggap mirip oleh sistem, sehingga tidak cocok untuk kebutuhan pencarian berbasis individu.
+    
+    \item \textbf{Pendekatan Berbasis Atribut atau Objek Semantik (\textit{Semantic-Based Image Retrieval})} \\
+    Metode ini memanfaatkan deteksi objek atau atribut tertentu dalam foto, seperti pakaian, latar belakang, atau aktivitas yang sedang dilakukan. Sistem dapat menyaring foto berdasarkan ciri kontekstual, misalnya foto saat memakai kacamata atau foto di pantai. Pendekatan ini mampu mempersempit hasil pencarian, tetapi tidak mampu memastikan identitas pengguna secara biometrik, karena fokusnya bukan pada wajah melainkan konteks visual.
+
+    \item \textbf{Pendekatan Berbasis \textit{Face Recognition} dengan \textit{One-Shot Learning}} \\ 
+    Pendekatan ini menggunakan teknik \textit{computer vision} dan \textit{machine learning} untuk mendeteksi, mengekstraksi, dan mencocokkan ciri biometrik wajah seseorang. Dengan hanya memberikan satu foto selfie sebagai acuan (\textit{one-shot query}), sistem dapat menemukan dan mengelompokkan semua foto yang mengandung wajah pengguna dalam \textit{dataset}. Kelebihan utama metode ini adalah kemampuan identifikasi yang spesifik terhadap individu, tingkat akurasi tinggi, serta kemudahan penerapan pada \textit{dataset} berskala besar. Meskipun memerlukan komputasi yang lebih tinggi dibandingkan pendekatan lain, metode ini paling relevan dan efektif untuk konteks pencarian foto pribadi yang berfokus pada identitas wajah.
+
+\end{enumerate}
+
+
+
 \subsection{Analisis Penentuan Solusi}
-\lipsum[9]
+
+Berdasarkan peluang teknologi yang dijelaskan pada bagian sebelumnya, teknologi yang paling relevan untuk digunakan pada kasus ini adalah \textit{face recognition}. Inti dari permasalah utama adalah identifikasi. Solusi yang dipilih harus mampu mendeteksi dan mengelompokkan foto yang mengandung wajah diri pengguna. Dari ketiga peluang teknologi, hanya \textit{face recognition} yang secara definisi merupakan metode biometrik yang dapat mengidentifikasi atau memverifikasi seseorang dengan membandingkan pola fitur wajah. Ini menjadikan \textit{face recognition} satu-satunya solusi yang secara spesifik menargetkan identitas individu, bukan hanya kemiripan visual umum atau konteks foto.
+
+Selain itu, sistem ini dapat mengimplementasikan konsep \textit{One-Shot Learning} yang dijelaskan pada Bagian II.4. Dalam OSL, sistem harus dapat membuat prediksi yang benar meskipun hanya diberikan satu contoh dari kelas baru. Penggunaan satu foto \textit{selfie} sebagai data acuan \textit{query} untuk membandingkan dengan seluruh kumpulan foto adalah aplikasi langsung dari paradigma OSL. Algoritma \textit{face recognition} modern, seperti yang menggunakan \textit{Siamese Network} atau \textit{Triplet Loss} memang dirancang untuk mempelajari fungsi kesamaan ini.
+
+Dua peluang teknologi lain yang sempat dipertimbangkan tidak mampu memenuhi kebutuhan yang telah didefinisikan sebelumnya. Pada CBIR, pendekatan ini hanya mengukur kesamaan berdasarkan karakteristik visual tingkat rendah seperti warna, tekstur, atau bentuk secara umum. CBIR tidak dapat mengukur kesamaan identitas wajah yang spesifik, sehingga gagal memisahkan foto pengguna dengan foto orang lain yang mungkin memiliki latar belakang atau pencahayaan yang mirip. Sedangkan, pendekatan berbasis atribut atau objek semantik, hanya berfokus pada penyaringan berdasarkan konteks atau objek dalam foto (misalnya, mencari foto di pantai, atau foto yang memakai kacamata). Meskipun dapat mempersempit hasil, metode ini tidak mampu memverifikasi identitas pengguna secara biometrik. Analisis antara peluang teknologi dapat dilihat dengan rangkum dan terstruktur di Tabel \ref{tab:alternatif_solusi}
+
+Berdasarkan hasil analisis, pendekatan berbasis \textit{face recognition} dengan \textit{one-shot learning} adalah solusi yang paling relevan dan efektif karena kelebihan utamanya terletak pada kemampuan untuk melakukan identifikasi spesifik individu. Meskipun memerlukan komputasi yang lebih tinggi, metode ini secara langsung menjawab tujuan sistem untuk menyaring dan mengelompokkan foto berdasarkan identitas wajah pengguna. Oleh karena itu, eksplorasi selanjutnya akan difokuskan pada penentuan algoritma \textit{face recognition} yang paling akurat untuk mengatasi variasi kondisi foto.
+
+\input{tables/ALT-solution-table.tex}
