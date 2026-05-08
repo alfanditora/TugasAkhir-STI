@@ -86,8 +86,8 @@ Dalam perbandingan, jumlah \textit{dataset} yang digunakan sebagai \textit{test 
 
 \begin{enumerate}
   \item \textbf{Waktu Komputasi} \\
-  Analisis waktu komputasi akan dilakukan dengan mencakup tahap \textit{preprocessing}, \textit{feature extraction}, dan \textit{matching}. Pendekatan ini bertujuan untuk mengisolasi kinerja algoritma \textit{face representation} yang menjadi fokus dari proses pendukung lainnya. Dengan jumlah \textit{dataset} \textit{test case} yang standar, hasil dari pengukuran akan menjadi lebih objektif dan setara.
-
+  Analisis waktu komputasi akan dilakukan dengan mencakup tahap \textit{preprocessing}, \textit{feature extraction}, dan \textit{matching}. Untuk mengukur kinerja pada skala yang lebih besar, pengujian akan dilakukan secara bertahap menggunakan jumlah \textit{dataset} yang bervariasi, yaitu 100, 300, 500, 700, hingga 1000 foto. Hasil dari pengukuran ini akan direpresentasikan dalam bentuk grafik kinerja untuk menganalisis skalabilitas dan tren waktu pemrosesan terhadap peningkatan jumlah foto secara objektif.
+  
   \item \textbf{Akurasi} \\
   Selain dari pengukuran waktu, akurasi diperlukan sebagai dasar validitas fungsional sistem. Pengukuran ini mengacu pada metrik standar seperti \textit{True Accept Rate}, \textit{False Accept Rate}, dan sebagainya. Untuk mendukung pengukuran ini, \textit{dataset} pengujian (\textit{test case}) harus memiliki anotasi label yang valid sebagai kebenaran dasar (\textit{Ground Truth}). Hal ini memastikan bahwa setiap hasil prediksi algoritma dapat dibandingkan secara presisi terhadap identitas yang sebenarnya.
   
@@ -110,7 +110,7 @@ Metode pengujian yang digunakan untuk menguji sistem yang dikembangkan memiliki 
     \item Pengujian Akurasi \\
     Pengujian ini dilakukan untuk mengukur akurasi sistem dalam menyaring foto pribadi dengan membandingkannya pada \textit{ground truth} yang ada.
     \item Pengujian Performa \\
-    Pengujian ini dilakukan untuk menghitung waktu rata-rata yang dibutuhkan sistem untuk memproses masukan foto dari pengguna.
+    Pengujian ini dilakukan untuk menghitung waktu rata-rata yang dibutuhkan sistem untuk memproses masukan foto dari pengguna. Pengujian akan melibatkan variasi jumlah foto masukan (100, 300, 500, 700, dan 1000 foto) untuk mengevaluasi efisiensi sistem saat menangani volume data yang besar. Keluaran dari pengujian ini adalah grafik kinerja yang menunjukkan korelasi antara jumlah foto dengan durasi pemrosesan sistem.
     \item Pengujian Stabilitas \\
     Pengujian ini dilakukan untuk menguji ketahanan sistem dengan masukan yang rusak untuk memastikan sistem dapat tetap berjalan. 
 \end{enumerate}
