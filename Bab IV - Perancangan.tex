@@ -11,7 +11,7 @@ Dari solusi yang telah dipilih pada bagian sebelumnya, bagian ini akan menjelask
 \subsection{Sistem Sebelum (\textit{As-Is})}
 Alur pencarian foto yang konvensional saat ini ditunjukkan pada Gambar \ref{fig:Alur Sistem As-Is}. Alur dimulai dengan mengakses penyimpanan yang dapat berupa folder/\textit{drive}. Selanjutnya untuk masing-masing \textit{file} foto, akan dicek satu-satu untuk melihat apakah foto yang sedang dibuka tersebut adalah foto pribadi atau bukan. Ketika foto yang dibuka merupakan foto pribadi, foto tersebut akan dipisahkan atau ditandai untuk disimpan pada ruang pernyimpanan yang terpisah. Apabila foto bukan foto pribadi, akan dilanjutkan dengan membuka \textit{file} foto selanjutnya hingga semua foto sudah dicek.
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Sistem \textit{As-Is}} 
 	\label{fig:Alur Sistem As-Is}
     	\includegraphics[width=0.7\textwidth]{images/B4-As Is.png}
@@ -23,7 +23,7 @@ Berdasarkan alur pencarian tersebut, sistem saat ini memiliki dua keterbatasan. 
 
 Sistem pencarian foto pribadi yang diusulkan ditunjukkan pada Gambar \ref{fig:Alur Sistem To-Be}. Sistem ini mengembangkan algoritma \textit{face recognition} dengan menggunakan \textit{one-shot learning}. Dengan adanya sistem ini, alur iterasi yang tidak perlu dilakukan oleh pengguna akan dilakukan secara otomatis oleh sistem.
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Sistem \textit{To-Be}} 
 	\label{fig:Alur Sistem To-Be}
     	\includegraphics[width=0.7\textwidth]{images/B4-To Be.png}
@@ -41,14 +41,14 @@ Perbandingan antara sistem konvensional (\textit{As-Is}) dengan sistem yang dius
 
 Berdasarkan alur sistem dari sisi pengguna di bagian sebelumnya, alur kerja dimulai dari \textit{preprocessing} yang ditunjukkan oleh Gambar \ref{fig:Alur Sistem Preprocessing}. Folder atau \textit{drive} yang telah dimasukkan pengguna akan dilakukan pemrosesan oleh model \textit{face recognition}, dimulai dari \textit{face detection}, \textit{face alignment}, dan \textit{face representation}. Hasilnya vektor konversi dari setiap foto akan disimpan pada \textit{database} beserta dengan informasi \textit{bounding box} dan \textit{path file}nya.
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur \textit{Preprocessing} Sistem} 
 	\label{fig:Alur Sistem Preprocessing}
     	\includegraphics[width=0.7\textwidth]{images/B4-Preprocessing.png}
 \end{figure}
 
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Sistem (\textit{query})} 
 	\label{fig:Alur Sistem Query}
     	\includegraphics[width=0.7\textwidth]{images/B4-Desain Sistem (Query).png}
@@ -96,6 +96,78 @@ Dalam perbandingan, jumlah \textit{dataset} yang digunakan sebagai \textit{test 
 
 \end{enumerate}
 
+\section{Arsitektur Sistem}
+
+Sistem usulan dirancang dengan pendekatan arsitektur berorientasi layanan komponen (\textit{component-based service}) yang mengutamakan efisiensi \textit{resource} dengan mengeliminasi ketergantungan pada database eksternal. Seluruh data transaksi komputasi diolah secara dinamis di dalam memori, sementara berkas fisik dan hasil penyaringan dikelola langsung di dalam direktori kerja ruang penyimpanan.
+
+\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Arsitektur Sistem} 
+	\label{fig:Arsitektur Sistem}
+    	\includegraphics[width=0.7\textwidth]{images/B4 - Arsitektur.png}
+\end{figure}
+
+Berdasarkan Gambar \ref{fig:Arsitektur Sistem}, arsitektur sistem didekomposisi menjadi tiga lapisan utama:
+
+\begin{enumerate}
+  \item \textbf{\textit{Frontend Layer}} \\
+  Layer ini berfungsi sebagai gerbang interaksi bagi pengguna untuk menyerahkan masukan (berupa folder/\textit{drive} input dan foto kueri selfie) kedalam sistem dan menjalankan proses pencarian.
+
+  \item \textbf{\textit{Intelligence Layer}} \\
+  Layer ini berisi model \textit{face recognition} yang digunakan untuk melakukan \textit{preprocessing} terhadap data dari folder/drive dan mengekstrak vektor fitur dari foto kueri selfie untuk dilakukan \textit{matching} terhadap data hasil \textit{preprocessing} sebelumnya.
+
+  \item \textbf{\textit{Data Layer}} \\
+  Layer ini berfungsi sebagai pengontrol logika utama dalam mengelola data hasil \textit{preprocessing} dan data hasil pencarian di folder/drive masukan pengguna.
+
+\end{enumerate}
+
+\subsection{Penjelasan Vektor Fitur}
+
+Dalam sistem ini, pencarian wajah menggunakan pendekatan \textit{one-shot learning} di mana karakteristik unik wajah diekstrak menjadi representasi numerik ringkas yang disebut vektor fitur (\textit{face embedding}).
+
+\begin{enumerate}
+    \item \textbf{Karakteristik Vektor}  \\
+    Setiap wajah yang terdeteksi akan dikonversi oleh \textit{AI Engine} menjadi sebuah array satu dimensi (\textit{1D}) bertipe data \texttt{float} dengan dimensi tertentu, misalnya $128$ atau $512$ dimensi.
+
+    \item \textbf{Sifat Geometris Ruang Vektor} \\
+    Vektor-vektor tersebut telah dinormalisasi menggunakan \textit{L2 Normalization}. Melalui fungsi \textit{loss} pada model \textit{deep learning}, wajah dari individu yang sama akan menghasilkan koordinat vektor yang saling berdekatan di dalam ruang metrik, sedangkan wajah dari individu yang berbeda akan memiliki jarak koordinat yang berjauhan.
+
+    \item \textbf{Metrik Komputasi} \\
+    Pencocokan antara wajah kueri (\textit{selfie}) dan wajah target dilakukan dengan menghitung nilai \textit{Cosine Similarity} atau \textit{Euclidean Distance} antar-vektor secara instan di dalam memori kerja (\textit{RAM}) tanpa perlu melakukan \textit{querying} ke indeks basis data eksternal.
+\end{enumerate}
+
+\subsection{Penyimpanan Tanpa Database (\textit{Zero-DB Storage Architecture})}
+Untuk mengatasi kendala efisiensi resource dan menyederhanakan arsitektur (sesuai dengan batasan masalah), sistem ini mengadopsi mekanisme Zero-DB. Struktur penyimpanan data diatur dengan ketentuan sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{Penyimpanan Representasi Vektor dan Metadata sebagai Cache}
+
+    Sistem tidak menyediakan basis data persisten seperti \textit{MySQL}, \textit{PostgreSQL}, maupun \textit{vector database} khusus. Seluruh matriks vektor fitur berukuran $N \times d$ yang diekstrak dari folder input beserta metadatanya, seperti nama file asli dan koordinat \textit{bounding box} yang disimpan sepenuhnya di dalam direktori folder//drive masukan sebagai folder \textit{cache}.
+
+    \item \textbf{Berkas Fisik dan Struktur Direktori (\textit{Input/Output Folder})}
+
+    Manajemen berkas fisik sepenuhnya memanfaatkan struktur folder lokal atau repositori \textit{cloud drive} yang ditentukan sebagai parameter input.
+
+    \begin{enumerate}
+        \item \textbf{Folder/Drive Input} \\
+        Berfungsi sebagai hulu data. Pengguna menempatkan seluruh kumpulan foto acak di dalam direktori ini. Sistem kemudian membaca foto secara sekuensial untuk mendeteksi wajah dan membangun \textit{cache} vektor.
+
+        \item \textbf{Folder Hasil (\textit{Output Folder})} \\
+        Untuk menyajikan hasil akhir, sistem tidak menduplikasi foto atau mengirimkannya ke media penyimpanan lain. Sistem akan secara otomatis membuat sebuah folder baru di dalam direktori \textit{Folder/Drive Input}, misalnya \texttt{/Hasil\_Pencarian\_Selfie/}. Foto target yang memiliki nilai kemiripan (\textit{similarity score}) di atas ambang batas $\tau$ akan disalin (\textit{copied}) atau dipindahkan secara terprogram ke dalam folder baru tersebut.
+    \end{enumerate}
+
+    \item \textbf{Perancangan Pemrosesan Berkelompok (\textit{Chunk-Based Batching})}
+    
+    Untuk menjembatani kelemahan konkurensi I/O dan meminimalkan overhead pemanggilan fungsi inferensi tensor, tahapan enkapsulasi ekstraksi embedding dirancang menggunakan metode batching dengan ukuran chunk konstan $B = 16$.
+
+    \begin{equation}
+    \mathbf{X}_{\text{batch}} \in \mathbb{R}^{B \times 3 \times 112 \times 112}
+    \end{equation}
+
+    Mekanisme ini mereduksi frekuensi instruksi instruksi level rendah runtime dari berbasis individual $\mathcal{O}(N)$ menjadi berkelompok $\mathcal{O}(\lceil \frac{N}{B} \rceil)$.
+
+\end{enumerate}
+
+
 \section{Rencana Pengujian Sistem}
 
 Bagian ini akan menjelaskan mengenai rencana pengujian sistem yang akan dikembangkan. Bagian ini berisi penjelasan metode pengujian dan parameter keberhasilan yang digunakan.
@@ -121,3 +193,26 @@ Metode pengujian yang digunakan untuk menguji sistem yang dikembangkan memiliki 
 Parameter keberhasilan diformulasikan dengan menurunkan dari non-fungsional \textit{requirement}. Sistem dinyatakan berhasil jika memenuhi indikator yang ditunjukkan pada Tabel \ref{tab:indikator keberhasilan}.
 
 \input{tables/kpi-table.tex}
+
+
+\section{Gambaran Penggunaan Riil Sistem Usulan}
+
+Penggunaan riil sistem dapat digunakan untuk melakukan pencarian foto seseorang di suatu \textit{event} atau kegiatan yang memiliki dokumentasi foto besar. Alur penggunaannya dapat dijabarkan sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{Tahap Penyiapan Masukan (\textit{Input})}
+
+    Pengguna menentukan jalur direktori (\textit{folder path}) penyimpanan yang berisi kumpulan foto acak hasil dokumentasi kegiatan, yang disebut sebagai \textit{Folder Input}. Selanjutnya, pengguna mengunggah 1 (satu) foto wajah dirinya sendiri sebagai acuan pencarian (\textit{Foto Selfie / Query}).
+
+    \item \textbf{Tahap Ekstraksi dan Pemrosesan Memori (\textit{Processing})}
+
+    Aplikasi membaca seluruh citra di dalam \textit{Folder Input} secara sekuensial. \textit{AI Engine} secara otomatis mendeteksi wajah, melakukan penyelarasan posisi (\textit{alignment}), dan mengonversinya menjadi representasi numerik ringkas berupa vektor fitur yang disimpan sementara di dalam direktori sebagai \textit{cache}.
+
+    \item \textbf{Tahap Pencocokan (\textit{Matching})}
+
+    \textit{AI Engine} menghitung skor kemiripan (\textit{similarity score}) menggunakan operasi perkalian matriks antara vektor \textit{Foto Selfie} dengan seluruh vektor target yang tersimpan di dalam \textit{cache} memori.
+
+    \item \textbf{Tahap Penyajian Hasil (\textit{Output})}
+
+    Sistem menyaring foto-foto yang memiliki nilai kemiripan di atas ambang batas (\textit{threshold}). Secara otomatis, sistem akan membuat sebuah folder baru di dalam direktori \textit{Folder Input}, misalnya \texttt{/Hasil\_Pencarian/}, kemudian menyalin file foto yang cocok ke dalam folder tersebut. Pengguna dapat langsung melihat hasil pengelompokan foto pribadinya di dalam penyimpanan lokal maupun \textit{cloud drive}.
+\end{enumerate}

@@ -4,4 +4,141 @@
 \cleardoublepage
 \chapter{IMPLEMENTASI}
 \label{chap:implementasi}
-asdfasdf
+
+\section{Lingkungan Implementasi}
+Sistem pencarian foto pribadi otomatis ini diimplementasikan sepenuhnya menggunakan bahasa pemrograman Python sebagai fondasi utama. Komponen perangkat lunak dan pustaka (\textit{libraries}) pihak ketiga yang digunakan dalam lingkungan produksi dieksekusi tanpa melibatkan basis data relasional maupun basis data vektor eksternal, melainkan berbasis manipulasi sistem berkas (\textit{file system IO}) dan manajemen memori.
+Berikut adalah spesifikasi komponen teknologi yang digunakan:
+\begin{enumerate}
+    \item {Bahasa Pemrograman}  
+    Python 3.10+
+
+    \item {AI Engine \& Library Face Recognition}  
+    \textit{DeepFace}
+
+    \item {Pustaka Pemrosesan Data \& Citra}  
+    \textit{OpenCV} (ekstraksi matriks citra), \textit{NumPy} (manipulasi array vektor berdimensi tinggi), dan \textit{Pillow} (manajemen format berkas gambar)
+\end{enumerate}
+
+Berikut adalah algoritma \textit{face recognition} yang dibandingkan:
+
+\begin{enumerate}
+    \item \textbf{Metode Berbasis Geometri (\textit{Geometry-Based Methods})}
+    \begin{enumerate}
+        \item \textit{Geometry-Based Method}
+    \end{enumerate}
+
+    \item \textbf{Metode Holistik (\textit{Holistic Methods})}
+    \begin{enumerate}
+        \item \textit{PCA + SVM}
+    \end{enumerate}
+
+    \item \textbf{Metode Berbasis Fitur (\textit{Feature-Based Methods})}
+    \begin{enumerate}
+        \item \textit{LBP + SVM}
+        \item \textit{HOG + SVM}
+    \end{enumerate}
+
+    \item \textbf{Metode Hibrida (\textit{Hybrid Methods})}
+    \begin{enumerate}
+        \item \textit{LBP + PCA}
+    \end{enumerate}
+
+    \item \textbf{Metode Pembelajaran Mendalam (\textit{Deep Learning Methods})}
+    \begin{enumerate}
+        \item \textit{DeepFace (FaceNet)}
+        \item \textit{DeepFace (VGG-Face)}
+        \item \textit{DeepFace (ArcFace)}
+    \end{enumerate}
+\end{enumerate}
+
+\section{Analisis Perbandingan Algoritma}
+
+Eksplorasi eksperimental dilakukan dengan menguji lima kategori metode representasi wajah yang telah didefinisikan pada rencana perancangan (Bab IV). Pengujian dilakukan secara adil (\textit{fair benchmark}) menggunakan lingkungan perangkat keras standar yang sama, dengan total dataset uji sebesar 1.000 foto target dan 1 foto kueri selfie sebagai acuan.
+
+\subsection{Evaluasi Tingkat Akurasi (\textit{Model Accuracy})}
+
+\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Perbandingan Akurasi Model} 
+	\label{fig:Akurasi Model}
+    	\includegraphics[width=0.7\textwidth]{images/1_akurasi_model.png}
+\end{figure}
+Pengukuran akurasi pada Gambar \ref{fig:Akurasi Model} dilakukan secara objektif dengan membandingkan hasil prediksi pencocokan wajah terhadap label kebenaran dasar (\textit{ground truth}) yang valid. Berdasarkan hasil pengujian eksperimen, diperoleh persentase akurasi dari masing-masing metode sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{ArcFace (\textit{Deep Learning Methods})}  
+    
+    Mencapai akurasi tertinggi sebesar $96{,}8\%$. Model ini menunjukkan tingkat toleransi yang sangat tangguh (\textit{robust}) terhadap variasi pencahayaan, pose miring, maupun oklusi sebagian wajah pada foto dokumentasi riil.
+
+    \item \textbf{FaceNet (\textit{Deep Learning Methods})}  
+    
+    Berada di posisi kedua dengan tingkat akurasi sebesar $91{,}5\%$.
+
+    \item \textbf{Hybrid Methods (LBP + PCA)}  
+    
+    Menghasilkan akurasi sebesar $78{,}2\%$. Performa metode ini menurun ketika dihadapkan pada foto target dengan variasi ekspresi yang ekstrem.
+
+    \item \textbf{Feature-based Methods (LBP)}  
+    
+    Menghasilkan akurasi sebesar $68{,}5\%$.
+
+    \item \textbf{Holistic Methods (PCA / Eigenfaces)}  
+    
+    Menghasilkan akurasi terendah yaitu sebesar $52{,}4\%$. Metode ini sangat rapuh terhadap perubahan intensitas cahaya (\textit{illumination variance}) pada kondisi dunia nyata.
+\end{enumerate}
+
+\subsection{Evaluasi Waktu Komputasi (\textit{Computational Time Trend})}
+
+\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Perbandingan Waktu Komputasi} 
+	\label{fig:Waktu Komputasi}
+    	\includegraphics[width=0.7\textwidth]{images/2_waktu_komputasi.png}
+\end{figure}
+Analisis waktu komputasi pada Gambar \ref{fig:Waktu Komputasi} dilakukan secara bertahap dengan memvariasikan volume dataset masif, mulai dari skala 100, 300, 500, 700, hingga 1.000 foto untuk mengukur skalabilitas tren waktu proses.
+\begin{enumerate}
+    \item \textbf{Metode Tradisional (PCA \& LBP)}  
+    
+    Menunjukkan waktu pemrosesan yang konstan dan sangat cepat, yaitu di bawah 100 detik untuk 1.000 foto, karena operasi matematis yang dilakukan hanya berupa ekstraksi piksel tingkat rendah atau proyeksi linear sederhana.
+
+    \item \textbf{Metode \textit{Deep Learning} (FaceNet \& ArcFace)} 
+    
+    Memiliki tren waktu komputasi yang linier berbanding lurus dengan jumlah foto target, yaitu sebesar $O(n)$. Untuk pemrosesan 1.000 foto, ArcFace membutuhkan total waktu sekitar 420 detik, yang berarti kecepatan rata-rata pemrosesannya adalah sekitar $0{,}42$ detik per foto. Hasil ini memenuhi syarat batas fungsional minimal (NF1) sistem, yaitu di bawah 1 detik per foto.
+\end{enumerate}
+
+\subsection{Evaluasi Penggunaan Memori (\textit{Memory Footprint})}
+
+\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
+  \caption{Perbandingan Penggunaan Memori} 
+	\label{fig:Penggunaan Memori}
+    	\includegraphics[width=0.7\textwidth]{images/3_penggunaan_memori.png}
+\end{figure}
+Evaluasi kompleksitas model pada Gambar \ref{fig:Penggunaan Memori} diukur berdasarkan besarnya konsumsi memori \textit{runtime} (\textit{RAM}) yang dialokasikan sistem selama melakukan proses \textit{batch processing} terhadap 1.000 foto.
+
+\begin{enumerate}
+    \item \textbf{Metode Berbasis \textit{Deep Learning} (ArcFace \& FaceNet)}  
+    
+    Mengonsumsi alokasi memori terbesar dan stabil pada kisaran 1.200 MB hingga 1.450 MB. Lonjakan penggunaan memori ini terjadi karena arsitektur \textit{neural network} memerlukan alokasi \textit{weight parameter} model yang besar ke dalam memori saat mengaktifkan \textit{AI Engine}.
+
+    \item \textbf{Metode Tradisional (PCA / LBP)}  
+    
+    Sangat efisien dengan konsumsi memori di bawah 400 MB.
+\end{enumerate}
+
+\section{Algoritma yang Dipilih}
+
+Berdasarkan hasil analisis komparatif di atas, \textit{ArcFace} dipilih sebagai algoritma final untuk diintegrasikan ke dalam sistem pencarian otomatis foto pribadi.
+
+Meskipun \textit{ArcFace} membutuhkan konsumsi memori \textit{runtime} yang relatif besar, yaitu sekitar 1.420 MB, serta waktu komputasi yang lebih lama dibandingkan metode konvensional, keputusan pemilihan ini didasarkan pada beberapa argumen akademik berikut:
+
+\begin{enumerate}
+    \item \textbf{Superioritas Akurasi Melampaui Batas Toleransi}
+
+    \textit{ArcFace} menghasilkan tingkat akurasi sebesar $96{,}8\%$. Nilai ini melampaui indikator keberhasilan nonfungsional yang ditargetkan pada Tabel \ref{tab:kebutuhan nonfungsional}, yaitu minimal $85\%$. Tingkat akurasi yang tinggi sangat krusial agar hasil penyaringan foto terhindar dari kesalahan penolakan palsu (\textit{False Reject}) maupun penerimaan palsu (\textit{False Accept}).
+
+    \item \textbf{Efisiensi Waktu per Foto yang Valid}
+
+    Kecepatan rata-rata \textit{ArcFace} sebesar $0{,}42$ detik per foto berada jauh di bawah ambang batas maksimal 1 detik/foto.
+
+    \item \textbf{Pemanfaatan \textit{Additive Angular Margin Loss}}
+
+    Keunggulan utama \textit{ArcFace} terletak pada fungsi ruginya (\textit{loss function}) yang mendistribusikan \textit{face embedding} secara ketat berdasarkan margin sudut (\textit{angular margin}). Mekanisme ini memberikan tingkat robustitas yang sangat tinggi dalam membedakan identitas wajah personal (\textit{discriminative power}), meskipun foto target memiliki variasi pencahayaan ekstrem, pose candid, maupun kondisi wajah yang tertutup masker atau kacamata pada situasi riil lapangan.
+\end{enumerate}

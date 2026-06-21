@@ -43,7 +43,7 @@ Selain fungsi-fungsi utama sistem yang telah didefinisikan sebelumnya, diperluka
 \subsection{\textit{Use Case} Diagram}
 Berdasarkan kebutuhan fungsional yang telah didefinisikan, diperlukan analisis untuk mengetahui bagaimana fungsionalitas sistem dari perspektif pengguna. Untuk menggambarkannya, digunakan \textit{use case} diagram yang menjelaskan apa yang dapat dilakukan pengguna terhadap sistem. Diagram ini menunjukkan hubungan antara aktor (pengguna) dengan \textit{use case} (fungsi utama) yang dapat dilakukan oleh sistem.
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{\textit{Use Case} Diagram} 
 	\label{fig:use case}
     	\includegraphics[width=0.7\textwidth]{images/AN-Use Case Diagram.png}
@@ -83,3 +83,43 @@ Dua peluang teknologi lain yang sempat dipertimbangkan tidak mampu memenuhi kebu
 Berdasarkan hasil analisis, pendekatan berbasis \textit{face recognition} dengan \textit{one-shot learning} adalah solusi yang paling relevan dan efektif karena kelebihan utamanya terletak pada kemampuan untuk melakukan identifikasi spesifik individu. Meskipun memerlukan komputasi yang lebih tinggi, metode ini secara langsung menjawab tujuan sistem untuk menyaring dan mengelompokkan foto berdasarkan identitas wajah pengguna. Oleh karena itu, eksplorasi selanjutnya akan difokuskan pada penentuan algoritma \textit{face recognition} yang paling akurat untuk mengatasi variasi kondisi foto.
 
 \input{tables/ALT-solution-table.tex}
+
+
+\section{Analisis Permasalahan Algoritma \textit{Face Recognition}}
+
+Selain permasalahan alur proses bisnis konvensional yang masih bersifat manual, diperlukan analisis mendalam mengenai karakteristik teknis dari algoritma \textit{face recognition} itu sendiri. Pada skenario pencarian otomatis foto pribadi berbasis \textit{one-shot learning}, tantangan utama beralih pada aspek robastitas algoritma dalam mengenali wajah dan efisiensi konsumsi sumber daya (\textit{resource}) perangkat keras.
+
+\subsection{Ketahanan Algoritma (\textit{Algorithm Robustness})}
+
+Algoritma \textit{face recognition} standar sering kali mengalami penurunan performa (akurasi) yang signifikan ketika dihadapkan pada data citra dunia nyata (\textit{in-the-wild}). Dalam konteks pencarian foto pribadi, ketidakpastian kondisi spasial dan lingkungan visual menciptakan beberapa permasalahan pada algoritma, antara lain:
+
+\begin{enumerate}
+  \item \textbf{Variasi Pencahayaan} \\
+  Foto-foto yang tersimpan dalam ruang penyimpanan pengguna memiliki intensitas cahaya yang tidak seragam (misalnya foto \textit{indoor}, \textit{outdoor}, atau \textit{low-light}). Perubahan pencahayaan ini mengubah distribusi nilai piksel wajah secara drastis, sehingga algoritma berbasis fitur tradisional atau linear sering kali gagal memetakan wajah tersebut ke dalam vektor representasi yang konsisten dengan kueri selfie.
+  
+  \item \textbf{Variasi Pose dan Ekspresi} \\
+  Berbeda dengan foto kueri yang berupa selfie frontal (menghadap ke depan), foto target dalam basis data sering kali diambil secara kandid (candid), miring (non-frontal), atau dengan ekspresi wajah yang ekstrem. Algoritma yang tidak memiliki fitur \textit{face alignment} yang kuat akan menghasilkan jarak Euclidean atau kosinus yang jauh, sehingga menyebabkan tingginya angka penolakan palsu (\textit{False Reject Rate}).
+
+  \item \textbf{Oklusi} \\
+  Wajah pengguna pada foto target sering kali tertutup sebagian oleh objek lain, seperti kacamata, masker, rambut, atau intervensi tangan. Hambatan visual ini membuang sebagian informasi geometri wajah, yang dapat mengecoh algoritma jika model terlalu bergantung pada fitur wajah global secara utuh.
+
+  \item \textbf{Masalah Skala Spasial Resolusi Ekstrem} \\
+  Citra digital dunia nyata sering kali memiliki resolusi sangat tinggi ($\ge 8\text{ MP}$ atau resolusi $4\text{K}$). Proses inferensi menggunakan detektor wajah standar pada resolusi asli ini menyebabkan lonjakan drastis pada komputasi grafis dan memicu Out of Memory (OOM) pada spesifikasi perangkat keras standar. Oleh karena itu, diperlukan mekanisme Progressive Resolution Fallback Cascade untuk mereduksi skala citra secara adaptif ke resolusi maksimal $1080\text{p}$ ($1920 \times 1080$ piksel) sebelum proses deteksi dilakukan.
+
+\end{enumerate}
+
+\subsection{Efisiensi Sumber Daya (\textit{Resource Efficiency})}
+
+Penggunaan paradigma \textit{one-shot learning} menuntut adanya kompromi yang besar antara akurasi model dengan kapasitas komputasi yang tersedia. Beberapa permasalahan efisiensi sumber daya yang diidentifikasi meliputi:
+
+\begin{enumerate}
+  \item \textbf{Tingginya Kompleksitas Komputasi Deep Learning} \\
+  Algoritma modern berbasis Convolutional Neural Network (CNN) dalam fase ekstraksi fitur (\textit{face representation}) membutuhkan operasi \textit{floating-point} yang sangat masif. Jika sistem dijalankan pada spesifikasi perangkat keras standar tanpa bantuan \textit{Graphics Processing Unit} (GPU) eksternal, waktu pemrosesan rata-rata per foto berisiko menjadi lebih lambat.
+
+  \item \textbf{Tantangan Skalabilitas Memori (Memory Footprint)} \\
+  Ketika pengguna memasukkan dataset dalam jumlah besar, proses pemuatan citra, deteksi \textit{bounding box}, hingga konversi menjadi feature vector berdimensi tinggi secara berurutan (\textit{batch processing}) berpotensi menyebabkan kegagalan memori (\textit{Out of Memory}).
+
+  \item \textbf{Efisiensi Struktur Basis Data Vektor} \\
+  Penyimpanan \textit{template} berupa vektor fitur memerlukan mekanisme pencarian yang optimal. Jika pencocokan dilakukan dengan melakukan iterasi linear ($O(n)$) terhadap seluruh data vektor di dalam basis data untuk setiap pencarian, waktu tunggu akan meningkat secara kuadratik seiring bertambahnya jumlah foto target.
+
+\end{enumerate}
