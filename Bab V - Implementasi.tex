@@ -6,17 +6,35 @@
 \label{chap:implementasi}
 
 \section{Lingkungan Implementasi}
-Sistem pencarian foto pribadi otomatis ini diimplementasikan sepenuhnya menggunakan bahasa pemrograman Python sebagai fondasi utama. Komponen perangkat lunak dan pustaka (\textit{libraries}) pihak ketiga yang digunakan dalam lingkungan produksi dieksekusi tanpa melibatkan basis data relasional maupun basis data vektor eksternal, melainkan berbasis manipulasi sistem berkas (\textit{file system IO}) dan manajemen memori.
+Sistem pencarian foto pribadi otomatis ini diimplementasikan sepenuhnya menggunakan bahasa pemrograman Python sebagai fondasi utama. Implementasi dibagi menjadi dua fase: fase eksplorasi algoritma (membandingkan berbagai pendekatan \textit{face recognition}) dan fase implementasi sistem produksi (membangun aplikasi desktop \textit{offline} berbasis komponen terbaik hasil eksplorasi).
+
 Berikut adalah spesifikasi komponen teknologi yang digunakan:
 \begin{enumerate}
-    \item {Bahasa Pemrograman}  
-    Python 3.10+
+    \item \textbf{Bahasa Pemrograman}\\
+    Python 3.10+ sebagai versi standar yang digunakan.
 
-    \item {AI Engine \& Library Face Recognition}  
-    \textit{DeepFace}
+    \item \textbf{Fase Eksplorasi Algoritma (\textit{Exploration})}\\
+    \textit{DeepFace} digunakan sebagai antarmuka unifikasi berbagai model \textit{face recognition} berbasis TensorFlow/Keras. Pustaka ini memungkinkan perbandingan yang adil (\textit{fair benchmark}) antar berbagai algoritma representasi wajah pada lingkungan yang seragam.
 
-    \item {Pustaka Pemrosesan Data \& Citra}  
-    \textit{OpenCV} (ekstraksi matriks citra), \textit{NumPy} (manipulasi array vektor berdimensi tinggi), dan \textit{Pillow} (manajemen format berkas gambar)
+    Kode eksplorasi dijalankan di \textit{notebook} untuk mempermudah analisis dengan menambahkan visualisasi terkait hasil dari perbandingan.
+
+    \item \textbf{Fase Produksi (\textit{AI Engine})}
+    \begin{enumerate}
+        \item \textit{ONNX Runtime}
+
+        Mesin inferensi ringan berbasis C++ untuk model ArcFace dan detektor SCRFD yang berjalan di OONX \textit{runtime}.
+
+        \item \textit{Google Cloud Project}
+        
+        Digunakan untuk integrasi ke Google Drive sebagai folder masukan dengan OAuth 2.0 untuk autentikasi Google Drive API.
+
+        \item \textit{CustomTkinter}
+
+        Kerangka kerja antarmuka pengguna grafis (\textit{GUI}).
+    \end{enumerate}
+
+    \item \textbf{Pustaka Pemrosesan Data \& Citra}\\
+    \textit{OpenCV} (ekstraksi matriks citra dan transformasi afin), \textit{NumPy} (manipulasi array vektor berdimensi tinggi), dan \textit{Pillow} (manajemen format berkas gambar)
 \end{enumerate}
 
 Berikut adalah algoritma \textit{face recognition} yang dibandingkan:
@@ -29,13 +47,13 @@ Berikut adalah algoritma \textit{face recognition} yang dibandingkan:
 
     \item \textbf{Metode Holistik (\textit{Holistic Methods})}
     \begin{enumerate}
-        \item \textit{PCA + SVM}
+        \item \textit{PCA}
     \end{enumerate}
 
     \item \textbf{Metode Berbasis Fitur (\textit{Feature-Based Methods})}
     \begin{enumerate}
-        \item \textit{LBP + SVM}
-        \item \textit{HOG + SVM}
+        \item \textit{LBP}
+        \item \textit{HOG}
     \end{enumerate}
 
     \item \textbf{Metode Hibrida (\textit{Hybrid Methods})}
@@ -53,92 +71,137 @@ Berikut adalah algoritma \textit{face recognition} yang dibandingkan:
 
 \section{Analisis Perbandingan Algoritma}
 
-Eksplorasi eksperimental dilakukan dengan menguji lima kategori metode representasi wajah yang telah didefinisikan pada rencana perancangan (Bab IV). Pengujian dilakukan secara adil (\textit{fair benchmark}) menggunakan lingkungan perangkat keras standar yang sama, dengan total dataset uji sebesar 1.000 foto target dan 1 foto kueri selfie sebagai acuan.
+Eksplorasi eksperimental dilakukan dengan menguji delapan model representasi wajah dari lima kategori yang telah didefinisikan pada rencana perancangan (Bab IV), dikombinasikan dengan dua detektor wajah: MTCNN dan SCRFD (\textit{Sample and Computation Redistribution Face Detector}). Pengujian dilakukan secara adil (\textit{fair benchmark}) menggunakan lingkungan perangkat keras yang sama, dengan total dataset uji sebesar 1.000 foto target dan 1 foto kueri \textit{selfie} sebagai acuan identitas. Hasil lengkap seluruh kombinasi disajikan pada Tabel~\ref{tab:hasil_perbandingan_lengkap}.
 
-\subsection{Evaluasi Tingkat Akurasi (\textit{Model Accuracy})}
+\subsection{Perbandingan F1-Score}
 
-\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
-  \caption{Perbandingan Akurasi Model} 
-	\label{fig:Akurasi Model}
-    	\includegraphics[width=0.7\textwidth]{images/1_akurasi_model.png}
+\begin{figure}[h]
+  \caption{Perbandingan F1-Score Seluruh Model dengan Detektor MTCNN}
+  \label{fig:f1-score-mtcnn}
+  \includegraphics[width=0.85\textwidth]{images/b5-f1-score-mtcnn.png}
 \end{figure}
-Pengukuran akurasi pada Gambar \ref{fig:Akurasi Model} dilakukan secara objektif dengan membandingkan hasil prediksi pencocokan wajah terhadap label kebenaran dasar (\textit{ground truth}) yang valid. Berdasarkan hasil pengujian eksperimen, diperoleh persentase akurasi dari masing-masing metode sebagai berikut:
 
-\begin{enumerate}
-    \item \textbf{ArcFace (\textit{Deep Learning Methods})}  
-    
-    Mencapai akurasi tertinggi sebesar $96{,}8\%$. Model ini menunjukkan tingkat toleransi yang sangat tangguh (\textit{robust}) terhadap variasi pencahayaan, pose miring, maupun oklusi sebagian wajah pada foto dokumentasi riil.
-
-    \item \textbf{FaceNet (\textit{Deep Learning Methods})}  
-    
-    Berada di posisi kedua dengan tingkat akurasi sebesar $91{,}5\%$.
-
-    \item \textbf{Hybrid Methods (LBP + PCA)}  
-    
-    Menghasilkan akurasi sebesar $78{,}2\%$. Performa metode ini menurun ketika dihadapkan pada foto target dengan variasi ekspresi yang ekstrem.
-
-    \item \textbf{Feature-based Methods (LBP)}  
-    
-    Menghasilkan akurasi sebesar $68{,}5\%$.
-
-    \item \textbf{Holistic Methods (PCA / Eigenfaces)}  
-    
-    Menghasilkan akurasi terendah yaitu sebesar $52{,}4\%$. Metode ini sangat rapuh terhadap perubahan intensitas cahaya (\textit{illumination variance}) pada kondisi dunia nyata.
-\end{enumerate}
-
-\subsection{Evaluasi Waktu Komputasi (\textit{Computational Time Trend})}
-
-\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
-  \caption{Perbandingan Waktu Komputasi} 
-	\label{fig:Waktu Komputasi}
-    	\includegraphics[width=0.7\textwidth]{images/2_waktu_komputasi.png}
+\begin{figure}[h]
+  \caption{Perbandingan F1-Score Seluruh Model dengan Detektor SCRFD}
+  \label{fig:f1-score-scrfd}
+  \includegraphics[width=0.85\textwidth]{images/b5-f1-score-scrfd.png}
 \end{figure}
-Analisis waktu komputasi pada Gambar \ref{fig:Waktu Komputasi} dilakukan secara bertahap dengan memvariasikan volume dataset masif, mulai dari skala 100, 300, 500, 700, hingga 1.000 foto untuk mengukur skalabilitas tren waktu proses.
-\begin{enumerate}
-    \item \textbf{Metode Tradisional (PCA \& LBP)}  
-    
-    Menunjukkan waktu pemrosesan yang konstan dan sangat cepat, yaitu di bawah 100 detik untuk 1.000 foto, karena operasi matematis yang dilakukan hanya berupa ekstraksi piksel tingkat rendah atau proyeksi linear sederhana.
 
-    \item \textbf{Metode \textit{Deep Learning} (FaceNet \& ArcFace)} 
-    
-    Memiliki tren waktu komputasi yang linier berbanding lurus dengan jumlah foto target, yaitu sebesar $O(n)$. Untuk pemrosesan 1.000 foto, ArcFace membutuhkan total waktu sekitar 420 detik, yang berarti kecepatan rata-rata pemrosesannya adalah sekitar $0{,}42$ detik per foto. Hasil ini memenuhi syarat batas fungsional minimal (NF1) sistem, yaitu di bawah 1 detik per foto.
-\end{enumerate}
+Gambar~\ref{fig:f1-score-mtcnn} dan Gambar~\ref{fig:f1-score-scrfd} menunjukkan bahwa metode berbasis \textit{deep learning} secara konsisten mendominasi peringkat F1-Score pada kedua konfigurasi detektor. Pada detektor MTCNN, tiga model teratas adalah \textit{VGG-Face} (0,747), \textit{FaceNet} (0,735), dan \textit{ArcFace} (0,711), jauh melampaui metode tradisional seperti HOG (0,471) dan PCA (0,451).
 
-\subsection{Evaluasi Penggunaan Memori (\textit{Memory Footprint})}
+Penggunaan detektor SCRFD secara keseluruhan meningkatkan F1-Score seluruh model: \textit{VGG-Face} melonjak menjadi 0,819, \textit{FaceNet} menjadi 0,763, dan \textit{ArcFace} menjadi 0,755. Peningkatan ini mengindikasikan bahwa kualitas \textit{crop} wajah yang dihasilkan SCRFD lebih optimal sebagai masukan komponen \textit{embedding}, berkat presisi deteksi \textit{anchor-free} yang lebih akurat.
 
-\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
-  \caption{Perbandingan Penggunaan Memori} 
-	\label{fig:Penggunaan Memori}
-    	\includegraphics[width=0.7\textwidth]{images/3_penggunaan_memori.png}
+\subsection{Evaluasi Waktu Komputasi}
+
+\begin{figure}[h]
+  \caption{Perbandingan Waktu Komputasi Seluruh Model dengan Detektor MTCNN}
+  \label{fig:waktu-mtcnn}
+  \includegraphics[width=0.85\textwidth]{images/b5-waktu-mtcnn.png}
 \end{figure}
-Evaluasi kompleksitas model pada Gambar \ref{fig:Penggunaan Memori} diukur berdasarkan besarnya konsumsi memori \textit{runtime} (\textit{RAM}) yang dialokasikan sistem selama melakukan proses \textit{batch processing} terhadap 1.000 foto.
 
-\begin{enumerate}
-    \item \textbf{Metode Berbasis \textit{Deep Learning} (ArcFace \& FaceNet)}  
-    
-    Mengonsumsi alokasi memori terbesar dan stabil pada kisaran 1.200 MB hingga 1.450 MB. Lonjakan penggunaan memori ini terjadi karena arsitektur \textit{neural network} memerlukan alokasi \textit{weight parameter} model yang besar ke dalam memori saat mengaktifkan \textit{AI Engine}.
+\begin{figure}[h]
+  \caption{Perbandingan Waktu Komputasi Seluruh Model dengan Detektor SCRFD}
+  \label{fig:waktu-scrfd}
+  \includegraphics[width=0.85\textwidth]{images/b5-waktu-scrfd.png}
+\end{figure}
 
-    \item \textbf{Metode Tradisional (PCA / LBP)}  
-    
-    Sangat efisien dengan konsumsi memori di bawah 400 MB.
-\end{enumerate}
+Waktu deteksi MTCNN untuk 1.000 foto mencapai 322,40 detik, sedangkan SCRFD menyelesaikan tugas yang sama dalam 141,33 detik dengan percepatan sebesar $\pm 2{,}3\times$. Komponen ekstraksi fitur mendominasi total waktu pemrosesan pada metode \textit{deep learning}: \textit{ArcFace} membutuhkan sekitar 1.243 detik (MTCNN) dan 1.524 detik (SCRFD) untuk mengekstrak \textit{embedding} dari 1.000 foto via \textit{backend} DeepFace/TensorFlow.
+
+Meskipun demikian, ekstraksi fitur merupakan \textit{one-time cost} yang hasilnya disimpan dalam \textit{cache} JSON, sehingga sesi pencarian berikutnya tidak memerlukan ekstraksi ulang. Metode tradisional (Geometri, LBP, HOG, PCA) memiliki waktu ekstraksi fitur yang jauh lebih singkat (di bawah 25 detik untuk 1.000 foto), namun nilai F1-Score yang rendah menjadikannya tidak memenuhi syarat minimal akurasi sistem.
+
+\subsection{Evaluasi Penggunaan Memori}
+
+\begin{figure}[h]
+  \caption{Perbandingan Penggunaan Memori Seluruh Model dengan Detektor MTCNN}
+  \label{fig:memory-mtcnn}
+  \includegraphics[width=0.85\textwidth]{images/b5-memory-mtcnn.png}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{Perbandingan Penggunaan Memori Seluruh Model dengan Detektor SCRFD}
+  \label{fig:memory-scrfd}
+  \includegraphics[width=0.85\textwidth]{images/b5-memory-scrfd.png}
+\end{figure}
+
+Kolom \textit{Memory Usage} pada Tabel~\ref{tab:hasil_perbandingan_lengkap} mencerminkan konsumsi memori inkremental komponen representasi wajah saat memproses 1.000 foto. \textit{ArcFace} dan \textit{FaceNet} menunjukkan konsumsi memori inkremental mendekati nol (0,000 MB), karena representasi \textit{embedding} 512 dimensi berformat \texttt{float32} hanya memerlukan $\approx 2$ KB per wajah.
+Sebaliknya, \textit{VGG-Face} mengonsumsi memori inkremental yang sangat besar: 534,73 MB (MTCNN) dan 1.825,36 MB (SCRFD), akibat alokasi \textit{buffer intermediate activation} TensorFlow yang proporsional terhadap arsitektur model yang lebih dalam. Lonjakan drastis pada konfigurasi SCRFD menunjukkan bahwa resolusi \textit{crop} yang lebih tinggi dari SCRFD memperbesar alokasi tensor internal VGG-Face secara signifikan.
+
+\subsection{Hasil Perbandingan Lengkap}
+
+\input{tables/perbandingan-algo.tex}
+
+Tabel~\ref{tab:hasil_perbandingan_lengkap} merangkum seluruh metrik evaluasi dari delapan model pada kedua konfigurasi detektor. Secara umum, detektor SCRFD menghasilkan performa yang lebih baik hampir pada semua model dibandingkan MTCNN, baik dari sisi akurasi, F1-Score, maupun kecepatan deteksi, sehingga SCRFD menjadi kandidat detektor yang lebih unggul untuk sistem produksi.
 
 \section{Algoritma yang Dipilih}
 
-Berdasarkan hasil analisis komparatif di atas, \textit{ArcFace} dipilih sebagai algoritma final untuk diintegrasikan ke dalam sistem pencarian otomatis foto pribadi.
-
-Meskipun \textit{ArcFace} membutuhkan konsumsi memori \textit{runtime} yang relatif besar, yaitu sekitar 1.420 MB, serta waktu komputasi yang lebih lama dibandingkan metode konvensional, keputusan pemilihan ini didasarkan pada beberapa argumen akademik berikut:
+Berdasarkan hasil analisis komparatif di atas, \textbf{ArcFace} dipilih sebagai algoritma representasi wajah dan \textbf{SCRFD} dipilih sebagai detektor wajah pada sistem produksi. Pemilihan ini didasarkan pada argumen berikut:
 
 \begin{enumerate}
-    \item \textbf{Superioritas Akurasi Melampaui Batas Toleransi}
+    \item \textbf{Keseimbangan Optimal antara Akurasi dan Efisiensi Memori}
 
-    \textit{ArcFace} menghasilkan tingkat akurasi sebesar $96{,}8\%$. Nilai ini melampaui indikator keberhasilan nonfungsional yang ditargetkan pada Tabel \ref{tab:kebutuhan nonfungsional}, yaitu minimal $85\%$. Tingkat akurasi yang tinggi sangat krusial agar hasil penyaringan foto terhindar dari kesalahan penolakan palsu (\textit{False Reject}) maupun penerimaan palsu (\textit{False Accept}).
+    Dengan detektor SCRFD, \textit{ArcFace} mencapai akurasi $89{,}1\%$ dan F1-Score $0{,}755$, sehingga memenuhi indikator keberhasilan nonfungsional minimal $85\%$ pada Tabel~\ref{tab:kebutuhan nonfungsional}. \textit{VGG-Face} memang menghasilkan akurasi lebih tinggi ($92{,}2\%$) dan F1-Score $0{,}819$, namun disertai konsumsi memori inkremental sebesar $1.825{,}36$ MB, lebih dari $400\times$ lebih besar dibandingkan \textit{ArcFace}. Untuk konteks aplikasi \textit{desktop offline} yang menargetkan perangkat dengan sumber daya terbatas, beban memori sebesar itu tidak dapat diterima.
 
-    \item \textbf{Efisiensi Waktu per Foto yang Valid}
+    \item \textbf{Keunggulan Arsitektur \textit{Additive Angular Margin Loss}}
 
-    Kecepatan rata-rata \textit{ArcFace} sebesar $0{,}42$ detik per foto berada jauh di bawah ambang batas maksimal 1 detik/foto.
+    Keunggulan utama \textit{ArcFace} terletak pada fungsi ruginya yang mendistribusikan \textit{face embedding} berdasarkan margin sudut (\textit{angular margin}) di ruang hiperbolik. Mekanisme ini menghasilkan representasi fitur yang lebih diskriminatif dibandingkan metode berbasis \textit{softmax} konvensional, sehingga lebih tangguh terhadap variasi pencahayaan, pose \textit{candid}, dan kondisi wajah tertutup sebagian pada foto dokumentasi riil.
 
-    \item \textbf{Pemanfaatan \textit{Additive Angular Margin Loss}}
+    \item \textbf{Kompatibilitas ONNX Runtime}
 
-    Keunggulan utama \textit{ArcFace} terletak pada fungsi ruginya (\textit{loss function}) yang mendistribusikan \textit{face embedding} secara ketat berdasarkan margin sudut (\textit{angular margin}). Mekanisme ini memberikan tingkat robustitas yang sangat tinggi dalam membedakan identitas wajah personal (\textit{discriminative power}), meskipun foto target memiliki variasi pencahayaan ekstrem, pose candid, maupun kondisi wajah yang tertutup masker atau kacamata pada situasi riil lapangan.
+    Model \textit{ArcFace} tersedia dalam format ONNX (\texttt{w600k\_r50.onnx}), memungkinkan inferensi langsung melalui ONNX Runtime tanpa ketergantungan pada TensorFlow. Migrasi ini menghasilkan peningkatan kecepatan inferensi \textit{embedding} sebesar $\pm 10$–$15\times$ (dari 0,15–0,25 detik menjadi 0,008–0,020 detik per wajah) dan mengurangi waktu inisialisasi model dari 5–15 detik menjadi kurang dari 1 detik.
 \end{enumerate}
+
+Argumen pemilihan SCRFD didasarkan pada kecepatan deteksi yang $\pm 2{,}3\times$ lebih cepat dibandingkan MTCNN (141,33 detik vs 322,40 detik untuk 1.000 foto), kualitas \textit{landmark} 5 titik yang setara, serta konsistensi \textit{backend}. SCRFD juga tersedia dalam format ONNX (\texttt{det\_2.5g.onnx}) sehingga sistem produksi cukup bergantung pada satu mesin inferensi tunggal.
+
+Dengan demikian, sistem produksi mengintegrasikan kombinasi komponen berikut:
+
+\begin{enumerate}
+    \item \textbf{SCRFD} (\texttt{det\_2.5g.onnx}) sebagai komponen deteksi wajah
+    \item \textbf{ArcFace ResNet-50} (\texttt{w600k\_r50.onnx}) sebagai komponen ekstraksi \textit{embedding} 512 dimensi
+    \item \textbf{ONNX Runtime} (\texttt{CPUExecutionProvider}) sebagai mesin inferensi untuk kedua model di atas
+\end{enumerate}
+
+\section{Implementasi Sistem Produksi}
+
+Sistem produksi diimplementasikan sebagai aplikasi desktop \textit{offline} sepenuhnya. Seluruh inferensi model, manajemen \textit{cache}, dan penyalinan hasil dilakukan secara lokal di perangkat pengguna.
+
+\subsection{Arsitektur Komponen Perangkat Lunak}
+
+Sistem diorganisasi ke dalam tiga lapisan komponen:
+
+\begin{enumerate}
+    \item \textbf{Lapisan GUI} (\texttt{src/gui/}): Antarmuka pengguna berbasis CustomTkinter dengan dua mode: mode produksi (\texttt{main.py}, \textit{threshold} tetap $\tau = 0{,}60$) dan mode demonstrasi (\texttt{main\_demo.py}, \textit{threshold} dapat diatur melalui \textit{slider} 0,10–1,00, dilengkapi pelaporan metrik evaluasi). Kelas \texttt{DemoApp} mewarisi (\textit{inherits}) dari \texttt{MainApp} dan hanya menimpa (\textit{overrides}) komponen yang berbeda.
+
+    \item \textbf{Lapisan Inti} (\texttt{src/core/}): Tiga komponen \textit{stateless} yang dapat digunakan secara independen:
+    \begin{enumerate}
+        \item \texttt{FaceDetector}
+        
+        Deteksi wajah dengan SCRFD atau MTCNN, dilengkapi \textit{fallback} resolusi progresif (960px $\rightarrow$ 720px $\rightarrow$ 512px $\rightarrow$ 360px) untuk menangani gambar beresolusi sangat tinggi
+        \item \texttt{ArcFaceONNXRunner}
+        
+        Ekstraksi \textit{embedding} 512 dimensi via ONNX Runtime, mendukung \textit{batch inference}
+        \item \texttt{FaceMatcher}
+        
+        Pencarian jarak kosinus tervektor menggunakan operasi perkalian matriks NumPy (\texttt{np.dot})
+    \end{enumerate}
+
+    \item \textbf{Lapisan Data} (\texttt{src/cache\_io/}, \texttt{src/utils/}): \texttt{CacheHandler} mengelola \textit{cache} JSON per-wajah di direktori \texttt{.face\_cache/}; \texttt{FileManager} mengelola pemindaian folder rekursif (mengecualikan \texttt{.face\_cache/} dan \texttt{Hasil\_Pencarian\_Selfie/}) dan penyalinan hasil.
+\end{enumerate}
+
+\subsection{Pemrosesan Latar Belakang dan \textit{Thread Safety}}
+
+Operasi pengindeksan dan pencarian dijalankan di \textit{daemon thread} terpisah (\texttt{PipelineWorker} dan \texttt{SearchWorker}) agar antarmuka GUI tetap responsif selama pemrosesan berlangsung. Semua pembaruan \textit{widget} dari \textit{thread} latar belakang dilakukan melalui \texttt{root.after(0, callback)}, yang menjadwalkan \textit{callback} pada iterasi berikutnya dari \textit{event loop} Tkinter di \textit{thread} utama.
+
+\subsection{Pengindeksan Inkremental dan Pemrosesan \textit{Chunk}}
+
+Sistem mendukung pengindeksan inkremental: foto yang telah memiliki entri \textit{cache} dilewati secara otomatis pada sesi pengindeksan berikutnya. Kunci \textit{cache} berupa MD5 dari pasangan (\textit{nama\_file\_relatif}, \textit{bounding box}), sehingga bersifat \textit{location-agnostic} karena pemindahan folder tidak membatalkan \textit{cache}.
+
+Foto baru diproses dalam kelompok (\textit{chunk}) berukuran $B = 16$ foto. Untuk setiap \textit{chunk}:
+
+\begin{enumerate}
+    \item Deteksi wajah dijalankan secara sekuensial untuk 16 foto
+    \item Seluruh \textit{crop} wajah dari 16 foto dikumpulkan menjadi satu \textit{batch tensor} berukuran $(N_{\text{wajah}}, 3, 112, 112)$
+    \item Satu pemanggilan \texttt{session.run()} mengekstrak \textit{embedding} untuk seluruh \textit{batch}
+    \item Setiap \textit{embedding} disimpan ke \textit{cache} JSON segera setelah diekstrak
+\end{enumerate}
+
+Mekanisme ini mereduksi frekuensi pemanggilan \texttt{session.run()} dari $\mathcal{O}(N)$ menjadi $\mathcal{O}\left(\lceil \frac{N}{B} \rceil\right)$, yang secara signifikan mengurangi \textit{overhead} eksekusi ONNX Runtime.

@@ -11,7 +11,7 @@ Dari solusi yang telah dipilih pada bagian sebelumnya, bagian ini akan menjelask
 \subsection{Sistem Sebelum (\textit{As-Is})}
 Alur pencarian foto yang konvensional saat ini ditunjukkan pada Gambar \ref{fig:Alur Sistem As-Is}. Alur dimulai dengan mengakses penyimpanan yang dapat berupa folder/\textit{drive}. Selanjutnya untuk masing-masing \textit{file} foto, akan dicek satu-satu untuk melihat apakah foto yang sedang dibuka tersebut adalah foto pribadi atau bukan. Ketika foto yang dibuka merupakan foto pribadi, foto tersebut akan dipisahkan atau ditandai untuk disimpan pada ruang pernyimpanan yang terpisah. Apabila foto bukan foto pribadi, akan dilanjutkan dengan membuka \textit{file} foto selanjutnya hingga semua foto sudah dicek.
 
-\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[tb] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Sistem \textit{As-Is}} 
 	\label{fig:Alur Sistem As-Is}
     	\includegraphics[width=0.7\textwidth]{images/B4-As Is.png}
@@ -23,13 +23,13 @@ Berdasarkan alur pencarian tersebut, sistem saat ini memiliki dua keterbatasan. 
 
 Sistem pencarian foto pribadi yang diusulkan ditunjukkan pada Gambar \ref{fig:Alur Sistem To-Be}. Sistem ini mengembangkan algoritma \textit{face recognition} dengan menggunakan \textit{one-shot learning}. Dengan adanya sistem ini, alur iterasi yang tidak perlu dilakukan oleh pengguna akan dilakukan secara otomatis oleh sistem.
 
-\begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Sistem \textit{To-Be}} 
 	\label{fig:Alur Sistem To-Be}
     	\includegraphics[width=0.7\textwidth]{images/B4-To Be.png}
 \end{figure}
 
-Alur dimulai dengan memasukkan folder foto dengan mengunggah menggunakan \textit{file .zip} atau dengan tautan untuk \textit{drive}. Kemudian, pengguna melakukan foto \textit{selfie} untuk diunggah kedalam sistem. Dari masukan tersebut, sistem kemudian akan memproses pencarian foto pribadi berdasarkan dengan wajah yang ada di dalam foto \textit{selfie}. Terakhir, keluaran dari sistem adalah folder foto pribadi yang berhasil disaring dari masukan awal.
+Alur dimulai dengan memilih jalur direktori (\textit{folder path}) penyimpanan foto yang tersimpan secara lokal di perangkat pengguna. Kemudian, pengguna memilih satu foto \textit{selfie} sebagai kueri pencarian. Dari masukan tersebut, sistem kemudian akan memproses pencarian foto pribadi berdasarkan wajah yang ada di dalam foto \textit{selfie}. Terakhir, keluaran dari sistem adalah folder berisi foto-foto pribadi yang berhasil disaring dari masukan awal.
 
 \subsection{Perbandingan Sistem \textit{As-Is} dan \textit{To-Be}}
 
@@ -39,7 +39,7 @@ Perbandingan antara sistem konvensional (\textit{As-Is}) dengan sistem yang dius
 
 \section{Penjelasan Desain Solusi Sistem}
 
-Berdasarkan alur sistem dari sisi pengguna di bagian sebelumnya, alur kerja dimulai dari \textit{preprocessing} yang ditunjukkan oleh Gambar \ref{fig:Alur Sistem Preprocessing}. Folder atau \textit{drive} yang telah dimasukkan pengguna akan dilakukan pemrosesan oleh model \textit{face recognition}, dimulai dari \textit{face detection}, \textit{face alignment}, dan \textit{face representation}. Hasilnya vektor konversi dari setiap foto akan disimpan pada \textit{database} beserta dengan informasi \textit{bounding box} dan \textit{path file}nya.
+Berdasarkan alur sistem dari sisi pengguna di bagian sebelumnya, alur kerja dimulai dari \textit{preprocessing} yang ditunjukkan Gambar \ref{fig:Alur Sistem Preprocessing}. Folder yang telah dipilih pengguna akan dilakukan pemrosesan oleh model \textit{face recognition}, dimulai dari \textit{face detection}, \textit{face alignment}, dan \textit{face representation}. Hasilnya vektor \textit{embedding} dari setiap wajah yang terdeteksi akan disimpan pada folder \textit{cache} (\texttt{.face\_cache/}) di dalam direktori foto masukan dalam format JSON, beserta dengan informasi \textit{bounding box} dan \textit{path file}-nya.
 
 \begin{figure}[H] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur \textit{Preprocessing} Sistem} 
@@ -55,7 +55,7 @@ Berdasarkan alur sistem dari sisi pengguna di bagian sebelumnya, alur kerja dimu
 \end{figure}
 
 
-Setalah \textit{preprocessing} dilakukan, selanjutnya dilakukan penyaringan berdasarkan foto \textit{selfie} yang dimasukkan pengguna sebagai \textit{query}. Foto \textit{selfie} akan diproses oleh model, sehingga bisa didapatkan hasil vektor dari foto tersebut. Hasil tersebut akan dilakukan \textit{face matching} dengan data yang telah ada di dalam \textit{database}. Apabila hasil \textit{matching} itu melebihi \textit{threshold}, foto itu akan ditampilkan sebagai foto pribadi dari pengguna. Semua foto tersebut akan dikumpulkan sebagai keluaran dari \textit{query}. Alur sistem \textit{query} ditunjukkan pada Gambar \ref{fig:Alur Sistem Query}.
+Setalah \textit{preprocessing} dilakukan, selanjutnya dilakukan penyaringan berdasarkan foto \textit{selfie} yang dimasukkan pengguna sebagai \textit{query}. Foto \textit{selfie} akan diproses oleh model, sehingga bisa didapatkan hasil vektor dari foto tersebut. Hasil tersebut akan dilakukan \textit{face matching} dengan data \textit{embedding} yang telah tersimpan di dalam \textit{cache}. Apabila jarak kosinus (\textit{cosine distance}) antara \textit{embedding selfie} dan \textit{embedding} target berada di bawah nilai ambang batas (\textit{threshold}) yang ditentukan, foto tersebut akan diklasifikasikan sebagai foto pribadi pengguna. Semua foto yang cocok tersebut akan dikumpulkan sebagai keluaran dari \textit{query}. Alur sistem \textit{query} ditunjukkan pada Gambar \ref{fig:Alur Sistem Query}.
 
 \section{Algoritma \textit{Face Recognition}}
 
@@ -66,7 +66,7 @@ Seperti yang telah diketahui dari Bagian II.2, \textit{face recognition} terbagi
 
 Eksplorasi yang dilakukan dalam algoritma \textit{face recognition} akan dilakukan pada komponen \textit{face representation}. Dalam eksplorasi, akan dilakukan perbandingan baik dari metode tradisional hingga metode yang paling modern. Tujuan eksplorasi ini adalah untuk menemukan metode yang paling efektif dan akurat dalam mendeteksi serta mengenali wajah pada kondisi foto yang bervariasi, sesuai dengan Rumusan Masalah kedua.
 
-Berdasarkan studi literatur pada Bagian II.3, terdapat lima kategori utama metode yang akan dieksplorasi dan dibandingkan kinerjanya dalam konteks \textit{one-shot learning} (OSL) untuk pencarian foto pribadi:
+Berdasarkan studi literatur pada Bagian II.5, terdapat lima kategori utama metode yang akan dieksplorasi dan dibandingkan kinerjanya dalam konteks \textit{one-shot learning} (OSL) untuk pencarian foto pribadi:
 
 \begin{enumerate}
   \item Metode Berbasis Geometri (\textit{Geometry-based Methods})
@@ -89,7 +89,7 @@ Dalam perbandingan, jumlah \textit{dataset} yang digunakan sebagai \textit{test 
   Analisis waktu komputasi akan dilakukan dengan mencakup tahap \textit{preprocessing}, \textit{feature extraction}, dan \textit{matching}. Untuk mengukur kinerja pada skala yang lebih besar, pengujian akan dilakukan secara bertahap menggunakan jumlah \textit{dataset} yang bervariasi, yaitu 100, 300, 500, 700, hingga 1000 foto. Hasil dari pengukuran ini akan direpresentasikan dalam bentuk grafik kinerja untuk menganalisis skalabilitas dan tren waktu pemrosesan terhadap peningkatan jumlah foto secara objektif.
   
   \item \textbf{Akurasi} \\
-  Selain dari pengukuran waktu, akurasi diperlukan sebagai dasar validitas fungsional sistem. Pengukuran ini mengacu pada metrik standar seperti \textit{True Accept Rate}, \textit{False Accept Rate}, dan sebagainya. Untuk mendukung pengukuran ini, \textit{dataset} pengujian (\textit{test case}) harus memiliki anotasi label yang valid sebagai kebenaran dasar (\textit{Ground Truth}). Hal ini memastikan bahwa setiap hasil prediksi algoritma dapat dibandingkan secara presisi terhadap identitas yang sebenarnya.
+  Selain dari pengukuran waktu, akurasi diperlukan sebagai dasar validitas fungsional sistem. Pengukuran ini mengacu pada metrik standar seperti \textit{precission}, \textit{F1-Score}, \textit{accuracy}, dan sebagainya. Untuk mendukung pengukuran ini, \textit{dataset} pengujian (\textit{test case}) harus memiliki anotasi label yang valid sebagai kebenaran dasar (\textit{Ground Truth}). Hal ini memastikan bahwa setiap hasil prediksi algoritma dapat dibandingkan secara presisi terhadap identitas yang sebenarnya.
   
   \item \textbf{Kompleksitas Model} \\
   Parameter kompleksitas dievaluasi untuk mengukur viabilitas implementasi (\textit{feasibility}). Terdapat dua pengukuran yang dilakukan, yaitu \textit{memory footprint} dan dependensi perangkat keras (CPU, GPU, dan sebagainya), Hal ini dilakukan untuk memastikan bahwa perbandingan antar algoritma adil dari sisi konsumsi sumber daya. Dengan demikian, dapat ditentukan apakah algoritma tersebut cocok diterapkan pada lingkungan dengan sumber daya terbatas.
@@ -100,7 +100,7 @@ Dalam perbandingan, jumlah \textit{dataset} yang digunakan sebagai \textit{test 
 
 Sistem usulan dirancang dengan pendekatan arsitektur berorientasi layanan komponen (\textit{component-based service}) yang mengutamakan efisiensi \textit{resource} dengan mengeliminasi ketergantungan pada database eksternal. Seluruh data transaksi komputasi diolah secara dinamis di dalam memori, sementara berkas fisik dan hasil penyaringan dikelola langsung di dalam direktori kerja ruang penyimpanan.
 
-\begin{figure}[H] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[t] % pilihn opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Arsitektur Sistem} 
 	\label{fig:Arsitektur Sistem}
     	\includegraphics[width=0.7\textwidth]{images/B4 - Arsitektur.png}
@@ -157,16 +157,80 @@ Untuk mengatasi kendala efisiensi resource dan menyederhanakan arsitektur (sesua
 
     \item \textbf{Perancangan Pemrosesan Berkelompok (\textit{Chunk-Based Batching})}
     
-    Untuk menjembatani kelemahan konkurensi I/O dan meminimalkan overhead pemanggilan fungsi inferensi tensor, tahapan enkapsulasi ekstraksi embedding dirancang menggunakan metode batching dengan ukuran chunk konstan $B = 16$.
-
-    \begin{equation}
-    \mathbf{X}_{\text{batch}} \in \mathbb{R}^{B \times 3 \times 112 \times 112}
-    \end{equation}
-
-    Mekanisme ini mereduksi frekuensi instruksi instruksi level rendah runtime dari berbasis individual $\mathcal{O}(N)$ menjadi berkelompok $\mathcal{O}(\lceil \frac{N}{B} \rceil)$.
+    Untuk menjembatani kelemahan konkurensi I/O dan meminimalkan overhead pemanggilan fungsi inferensi tensor, tahapan enkapsulasi ekstraksi embedding dirancang menggunakan metode batching dengan ukuran chunk konstan $B = 16$. Mekanisme ini mereduksi frekuensi instruksi instruksi level rendah runtime dari berbasis individual $\mathcal{O}(N)$ menjadi berkelompok $\mathcal{O}(\lceil \frac{N}{B} \rceil)$.
 
 \end{enumerate}
 
+\subsection{Data Flow}
+
+Untuk memperjelas bagaimana data bertransformasi mulai dari foto mentah hingga
+menjadi hasil pencarian, bagian ini menjelaskan \textit{data flow} sistem secara
+menyeluruh. Diagram ini menyatukan alur \textit{preprocessing} (Gambar
+\ref{fig:Alur Sistem Preprocessing}) dan alur \textit{query}
+(Gambar \ref{fig:Alur Sistem Query}) ke dalam satu diagram yang menunjukkan
+pergerakan serta perubahan bentuk data di setiap komponen, mengikuti tiga
+lapisan arsitektur yang telah dijelaskan pada Bagian IV.4 (\textit{Frontend
+Layer}, \textit{Intelligence Layer}, dan \textit{Data Layer}). Diagram
+\textit{data flow} sistem ditunjukkan pada Gambar \ref{fig:Data Flow Sistem}.
+
+\begin{figure}[H]
+  \caption{Diagram \textit{Data Flow} Sistem}
+	\label{fig:Data Flow Sistem}
+    	\includegraphics[width=\textwidth]{images/B4-Data Flow.png}
+\end{figure}
+
+Berdasarkan Gambar \ref{fig:Data Flow Sistem}, pergerakan data pada sistem
+terbagi menjadi dua alur yang melalui tahap transformasi yang serupa sebelum
+akhirnya bertemu pada tahap pencocokan (\textit{matching}).
+
+\begin{enumerate}
+  \item \textbf{Alur Pengindeksan (\textit{Preprocessing})} \\
+  Data pada alur ini bermula dari \textit{Folder Foto} yang dipilih pengguna
+  sebagai masukan awal. Setiap foto yang dibaca akan melewati tahap deteksi
+  wajah, sehingga menghasilkan data berupa koordinat \textit{bounding box}
+  beserta lima titik penanda (\textit{keypoints}) wajah. Data tersebut
+  digunakan pada tahap \textit{alignment} untuk menghasilkan potongan citra
+  wajah yang telah diselaraskan posisinya. Potongan wajah ini kemudian
+  diproses oleh model \textit{face representation}, sehingga diperoleh
+  vektor fitur berdimensi 128 atau 512. Vektor tersebut dinormalisasi menggunakan
+  \textit{L2 Normalization} sehingga menjadi \textit{unit vector}, sebelum
+  akhirnya disimpan sebagai berkas JSON pada folder \textit{cache}
+  (\texttt{.face\_cache/}), sesuai dengan mekanisme \textit{Zero-DB Storage
+  Architecture} yang telah dijelaskan pada Bagian IV.4.2.
+
+  \item \textbf{Alur Pencarian (\textit{Query})} \\
+  Data pada alur ini bermula dari 1 (satu) foto \textit{selfie} yang dipilih
+  pengguna sebagai kueri pencarian. Foto tersebut melewati tahap transformasi
+  yang sama seperti alur pengindeksan, yaitu deteksi wajah, \textit{alignment},
+  ekstraksi vektor fitur, hingga normalisasi L2, sehingga dihasilkan satu
+  \textit{unit vector} yang merepresentasikan wajah kueri. Berbeda dengan alur
+  pengindeksan, vektor pada alur ini tidak disimpan ke \textit{cache} karena
+  hanya digunakan sekali sebagai acuan pada tahap pencocokan.
+
+  \item \textbf{Pencocokan (\textit{Matching}) dan Penyaringan
+  (\textit{Filtering})} \\
+  Vektor kueri hasil alur pencarian dibandingkan dengan seluruh vektor yang
+  tersimpan di dalam \textit{cache} melalui perhitungan \textit{Cosine
+  Similarity}, sehingga setiap vektor target memperoleh skor kemiripan
+  terhadap vektor kueri. Skor tersebut selanjutnya disaring berdasarkan nilai
+  ambang batas yang ditentukan. Sehingga, hanya vektor dengan jarak kosinus di bawah
+  nilai tersebut yang dinyatakan sebagai kecocokan (\textit{match}).
+
+  \item \textbf{Keluaran (\textit{Output})} \\
+  Foto-foto yang dinyatakan cocok pada tahap penyaringan disalin ke dalam
+  folder baru, yaitu \texttt{Hasil\_Pencarian\_Selfie/}, yang dibuat secara
+  otomatis di dalam direktori \textit{Folder Foto} masukan. Folder ini
+  menjadi keluaran akhir yang dapat langsung diakses oleh pengguna.
+\end{enumerate}
+
+Melalui diagram \textit{data flow} ini, dapat terlihat bahwa seluruh
+transformasi data berlangsung secara \textit{in-memory} tanpa keterlibatan
+basis data eksternal, sejalan dengan prinsip \textit{Zero-DB Storage
+Architecture} yang menjadi salah satu batasan masalah dalam pengembangan
+sistem ini. Selain itu, alur pengindeksan pada dasarnya hanya perlu dijalankan
+sekali untuk setiap folder foto (dengan dukungan pengindeksan inkremental),
+sedangkan alur pencarian dapat dijalankan berulang kali dengan foto
+\textit{selfie} yang berbeda tanpa perlu mengulang proses pengindeksan.
 
 \section{Rencana Pengujian Sistem}
 
@@ -202,7 +266,7 @@ Penggunaan riil sistem dapat digunakan untuk melakukan pencarian foto seseorang 
 \begin{enumerate}
     \item \textbf{Tahap Penyiapan Masukan (\textit{Input})}
 
-    Pengguna menentukan jalur direktori (\textit{folder path}) penyimpanan yang berisi kumpulan foto acak hasil dokumentasi kegiatan, yang disebut sebagai \textit{Folder Input}. Selanjutnya, pengguna mengunggah 1 (satu) foto wajah dirinya sendiri sebagai acuan pencarian (\textit{Foto Selfie / Query}).
+    Pengguna menentukan jalur direktori (\textit{folder path}) penyimpanan yang berisi kumpulan foto acak hasil dokumentasi kegiatan, yang disebut sebagai \textit{Folder Input}. Selanjutnya, pengguna memilih 1 (satu) foto wajah dirinya sendiri atau foto selfie dari penyimpanan lokal sebagai acuan pencarian (\textit{Foto Selfie / Query}).
 
     \item \textbf{Tahap Ekstraksi dan Pemrosesan Memori (\textit{Processing})}
 
@@ -214,5 +278,5 @@ Penggunaan riil sistem dapat digunakan untuk melakukan pencarian foto seseorang 
 
     \item \textbf{Tahap Penyajian Hasil (\textit{Output})}
 
-    Sistem menyaring foto-foto yang memiliki nilai kemiripan di atas ambang batas (\textit{threshold}). Secara otomatis, sistem akan membuat sebuah folder baru di dalam direktori \textit{Folder Input}, misalnya \texttt{/Hasil\_Pencarian/}, kemudian menyalin file foto yang cocok ke dalam folder tersebut. Pengguna dapat langsung melihat hasil pengelompokan foto pribadinya di dalam penyimpanan lokal maupun \textit{cloud drive}.
+    Sistem menyaring foto-foto yang memiliki nilai kemiripan di atas ambang batas (\textit{threshold}). Secara otomatis, sistem akan membuat sebuah folder baru di dalam direktori \textit{Folder Input}, misalnya \texttt{/Hasil\_Pencarian/}, kemudian menyalin file foto yang cocok ke dalam folder tersebut. Pengguna dapat langsung melihat hasil pengelompokan foto pribadinya di dalam penyimpanan lokal.
 \end{enumerate}

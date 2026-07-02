@@ -1,0 +1,42 @@
+\begin{sidewaystable}[h]
+    \centering
+    \caption{Hasil Perbandingan Lengkap (8 Model) dengan Detektor MTCNN dan SCRFD}
+    \label{tab:hasil_perbandingan_lengkap}
+
+    % ---- Tabel 1: MTCNN ----
+    \textbf{Tabel 1. Hasil Perbandingan dengan Detektor MTCNN}\\[0.5em]
+    \begin{tabular}{|p{3cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{2.5cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Best Threshold} & \textbf{Feature Extraction Time (s)} & \textbf{Inference Time (s)} & \textbf{Memory Usage (MB)} & \textbf{Detection Time (s)} \\ \hline
+
+        Geometry-Based      & 0.345000 & 0.259557 & 0.960396 & 0.408667 & 0.05 & 1.794549    & 6.875577  & 0.796875   & 322.398885 \\ \hline
+        PCA (Holistik)      & 0.547667 & 0.315760 & 0.787836 & 0.450830 & 0.95 & 3.439454    & 7.505657  & 284.753906 & 322.398885 \\ \hline
+        LBP (Berbasis Fitur)& 0.441333 & 0.280868 & 0.878359 & 0.425634 & 0.25 & 11.494441   & 7.472873  & 0.781250   & 322.398885 \\ \hline
+        HOG (Berbasis Fitur)& 0.574000 & 0.332748 & 0.803395 & 0.470588 & 0.30 & 18.239864   & 8.448654  & 132.109375 & 322.398885 \\ \hline
+        LBP + PCA (Hibrida) & 0.459333 & 0.276284 & 0.799151 & 0.410610 & 0.95 & 11.062305   & 7.749343  & 412.812500 & 322.398885 \\ \hline
+        DeepFace (Facenet)  & 0.874333 & 0.730447 & 0.739745 & 0.735067 & 0.40 & 1607.450316 & 8.306349  & 0.000000   & 322.398885 \\ \hline
+        DeepFace (VGG-Face) & 0.894333 & 0.858456 & 0.660537 & 0.746603 & 0.60 & 1743.119371 & 9.228585  & 534.734375 & 322.398885 \\ \hline
+        DeepFace (ArcFace)  & 0.861000 & 0.696477 & 0.727016 & 0.711419 & 0.65 & 1243.435217 & 11.005755 & 0.000000   & 322.398885 \\ \hline
+
+    \end{tabular}
+
+    \vspace{1.5em}
+
+    % ---- Tabel 2: SCRFD ----
+    \textbf{Tabel 2. Hasil Perbandingan dengan Detektor SCRFD}\\[0.5em]
+    \begin{tabular}{|p{3cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{2.5cm}|p{2cm}|p{2cm}|p{2cm}|}
+        \hline
+        \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Best Threshold} & \textbf{Feature Extraction Time (s)} & \textbf{Inference Time (s)} & \textbf{Memory Usage (MB)} & \textbf{Detection Time (s)} \\ \hline
+
+        Geometry-Based      & 0.290000 & 0.249207 & 1.000000 & 0.398984 & 0.05 & 2.854128    & 10.009302 & 0.945312    & 141.329536 \\ \hline
+        PCA (Holistik)      & 0.514333 & 0.308282 & 0.852900 & 0.452873 & 0.95 & 5.522211    & 10.739054 & 417.066406  & 141.329536 \\ \hline
+        LBP (Berbasis Fitur)& 0.372000 & 0.267850 & 0.960396 & 0.418877 & 0.30 & 15.818657   & 9.571036  & 0.203125    & 141.329536 \\ \hline
+        HOG (Berbasis Fitur)& 0.587667 & 0.336015 & 0.768034 & 0.467499 & 0.30 & 24.706835   & 9.894295  & 164.617188  & 141.329536 \\ \hline
+        LBP + PCA (Hibrida) & 0.408000 & 0.262550 & 0.835926 & 0.399594 & 0.95 & 14.041398   & 10.164680 & 375.601562  & 141.329536 \\ \hline
+        DeepFace (Facenet)  & 0.889000 & 0.767908 & 0.758133 & 0.762989 & 0.40 & 1761.458499 & 12.435488 & 0.000000    & 141.329536 \\ \hline
+        DeepFace (VGG-Face) & 0.922000 & 0.905660 & 0.746818 & 0.818605 & 0.60 & 2147.132272 & 13.597491 & 1825.359375 & 141.329536 \\ \hline
+        DeepFace (ArcFace)  & 0.891000 & 0.803514 & 0.711457 & 0.754689 & 0.60 & 1524.226980 & 11.120317 & 0.000000    & 141.329536 \\ \hline
+
+    \end{tabular}
+
+\end{sidewaystable}

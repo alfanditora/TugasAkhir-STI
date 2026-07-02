@@ -4,77 +4,153 @@
 \cleardoublepage
 \chapter{EVALUASI}
 \label{chap:evaluasi}
-asdfasdf
+
 \section{Metode Evaluasi}
-asdfasdf
+
+Pengujian sistem dilakukan sesuai dengan rencana yang telah ditetapkan pada Bab IV, meliputi empat jenis pengujian: fungsional, akurasi, performa, dan stabilitas.
+
+\subsection{Pengujian Fungsional}
+
+Pengujian fungsional dilakukan dengan menjalankan sistem menggunakan dataset foto riil dan memverifikasi bahwa seluruh alur kerja berjalan tanpa kegagalan. Kriteria keberhasilan mencakup: (1) sistem berhasil menerima masukan berupa direktori folder foto (FR1), (2) sistem berhasil mengidentifikasi foto yang mengandung wajah kueri (FR2), dan (3) sistem menghasilkan folder keluaran \texttt{Hasil\_Pencarian\_Selfie/} berisi foto-foto hasil penyaringan (FR3).
+
+\subsection{Pengujian Akurasi}
+
+Pengujian akurasi dilakukan menggunakan mode demonstrasi sistem (\textit{Demo Mode}) yang memanfaatkan berkas \textit{ground truth} (GT) dalam format JSON. Berkas GT memiliki struktur \textit{multi-person} yang mendefinisikan keberadaan setiap orang uji pada setiap foto dataset:
+
+\begin{lstlisting}[language=Python, caption={Contoh Format Berkas \textit{Ground Truth} JSON}]
+{
+    "0001.jpg": {
+        "contains_person_A": true,
+        "contains_person_B": false,
+        "contains_person_C": false
+    },
+    "0022.jpg": {
+        "contains_person_A": true,
+        "contains_person_B": true,
+        "contains_person_C": false
+    }
+}
+\end{lstlisting}
+
+Evaluasi dilakukan per-kueri (satu pencarian per orang). Hasil pencarian dibandingkan dengan kolom GT yang relevan untuk menghasilkan \textit{confusion matrix}: \textit{True Positive} (TP), \textit{False Positive} (FP), \textit{False Negative} (FN), dan \textit{True Negative} (TN). Metrik evaluasi diturunkan dari \textit{confusion matrix} tersebut:
+
+\begin{equation}
+\label{eq:precision}
+\text{Precision} = \frac{TP}{TP + FP}
+\end{equation}
+
+\begin{equation}
+\label{eq:recall}
+\text{Recall} = \frac{TP}{TP + FN}
+\end{equation}
+
+\begin{equation}
+\label{eq:f1}
+F_1 = \frac{2 \times \text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+
+\begin{equation}
+\label{eq:accuracy}
+\text{Accuracy} = \frac{TP + TN}{N_{\text{total}}}
+\end{equation}
+
+Nilai \textit{threshold} yang digunakan adalah $\tau = 0{,}60$, yang dipilih melalui pencarian kisi (\textit{grid search}) dengan rentang $\tau \in \{0{,}05, 0{,}10, \ldots, 0{,}95\}$ untuk memaksimalkan $F_1$-\textit{score} pada data \textit{ground truth} tiga orang uji.
+
+\subsection{Pengujian Performa}
+
+Pengujian performa dilakukan dengan mengukur waktu komputasi setiap tahap \textit{pipeline} menggunakan \texttt{time.perf\_counter()}. Tahap yang diukur meliputi \textit{face detection} (inferensi SCRFD), \textit{face alignment} (transformasi afin), dan \textit{feature extraction} (inferensi \textit{batch} ArcFace ONNX). Pengujian dilakukan terhadap dataset yang bervariasi (100, 300, 500, 700, dan 1.000 foto) untuk menganalisis skalabilitas sistem.
+
+\subsection{Pengujian Stabilitas}
+
+Pengujian stabilitas dilakukan dengan menyisipkan berkas foto yang rusak (\textit{corrupt}) ke dalam dataset pengujian. Sistem dinyatakan lulus apabila dapat melanjutkan pemrosesan foto berikutnya tanpa terminasi serta berhasil menerapkan mekanisme \textit{fallback} resolusi progresif untuk foto berukuran sangat besar.
+
 \section{Hasil Evaluasi}
-asdfasdf
-\section{Pembahasan Hasil Evaluasi}
-\section{Evaluasi Kesalahan Penulisan yang Sering Terjadi}
-\subsection{Penggunaan Kata "di mana" atau "dimana"}
-Banyak yang menuliskan kata "di mana" atau "dimana" sebagai pengganti kata "which" dalam bahasa Inggris. 
-Padahal, penggunaan kata "di mana" atau "dimana" tidak tepat dalam konteks tersebut. Demikian juga untuk kata serupa, misalnya "yang mana".
-Kata "di mana" atau "dimana" ini harus diganti dengan kata lain, seperti "dengan", "tempat", "yang", dan sebagainya tergantung kalimatnya.
-Penjelasan lengkap dapat dilihat pada \autocite{BPBI}.
 
-\subsection{Penggunaan Kata "sedangkan" dan "sehingga"}
+\subsection{Hasil Pengujian Fungsional}
 
-\begin{table}[t]
-  \begin{tabular}{|c|l|l|}
-  \hline
-  Kata & Salah & Benar \\ \hline
-  sedangkan & \begin{tabular}[c]{@{}c@{}}Sedangkan sistem lama masih\\ digunakan oleh banyak pengguna.\end{tabular} & \begin{tabular}[c]{@{}c@{}}Sistem lama masih digunakan\\ oleh banyak pengguna,\\ sedangkan sistem baru belum siap.\end{tabular} \\ \hline
-  sehingga & \begin{tabular}[c]{@{}c@{}}Sehingga sistem lama masih\\ digunakan oleh banyak pengguna.\end{tabular} & \begin{tabular}[c]{@{}c@{}}Sistem lama masih digunakan\\ oleh banyak pengguna sehingga\\ sistem baru belum siap.\end{tabular} \\ \hline
-  \end{tabular}
-  \caption{Contoh penggunaan kata "sedangkan" dan "sehingga"}
-  \label{tbl:sedangkan_sehingga}
+Sistem berhasil menyelesaikan seluruh skenario pengujian fungsional yang ditetapkan. Sistem mampu membaca folder masukan secara rekursif (termasuk subfolder), mendeteksi dan mengekstrak \textit{embedding} wajah dari setiap foto, menyimpan hasil ke \textit{cache} JSON, serta menyalin foto yang cocok ke folder \texttt{Hasil\_Pencarian\_Selfie/}. Pengindeksan bersifat inkremental dengan foto yang telah diindeks pada sesi sebelumnya tidak diproses ulang, yang diverifikasi dengan menjalankan pengindeksan dua kali pada folder yang sama dan memastikan tidak ada foto yang diproses ulang pada sesi kedua.
+
+\subsection{Hasil Pengujian Akurasi}
+
+Pengujian akurasi dilakukan pada dataset 1.000 foto dengan 3 orang uji (Person A, B, C). Hasil pencarian pada \textit{threshold} optimal $\tau = 0{,}60$ menghasilkan akurasi sistem sebesar $96{,}8\%$.
+
+Tabel \ref{tab:hasil grid search} menunjukkan pengaruh variasi nilai \textit{threshold} terhadap perilaku sistem:
+
+\begin{table}[H]
+    \caption{Pengaruh Nilai \textit{Threshold} terhadap Perilaku Sistem}
+    \label{tab:hasil grid search}
+    \begin{tabularx}{\textwidth}{|c|X|X|X|}
+    \hline
+    \textbf{\textit{Threshold} ($\tau$)} & \textbf{Precision} & \textbf{Recall} & \textbf{$F_1$-\textit{Score}} \\ \hline
+    0,40 & Sangat Tinggi & Rendah & Sedang \\ \hline
+    0,50 & Tinggi & Sedang & Tinggi \\ \hline
+    \textbf{0,60} & \textbf{Tinggi} & \textbf{Tinggi} & \textbf{Tertinggi} \\ \hline
+    0,70 & Sedang & Sangat Tinggi & Sedang-Tinggi \\ \hline
+    0,80 & Rendah & Sangat Tinggi & Sedang \\ \hline
+    \end{tabularx}
 \end{table}
 
-Kata "sedangkan" dan "sehingga" adalah kata hubung atau konjungsi. 
-Konjungsi adalah kata atau ungkapan yang menghubungkan satuan bahasa 
-(kata, frasa, klausa, dan kalimat). 
-Konjungsi dapat dibagi menjadi konjungsi intrakalimat dan antarkalimat.  
-Kata "sedangkan" menghubungkan dua klausa yang bersifat kontrasif, 
-sedangkan "sehingga" menghubungkan dua klausa yang bersifat kausal. 
-Dalam ragam formal, kata hubung “sedangkan” dan “sehingga” hanya dapat digunakan 
-sebagai konjungsi intrakalimat sehingga kedua konjungsi itu \textbf{tidak dapat diletakkan pada awal kalimat}.
-Selain itu, penggunaan kata "sedangkan" harus didahului oleh koma (,), sedangkan kata "sehingga" tidak perlu didahului oleh koma (,).
-Contoh penggunaan yang benar dan salah dapat dilihat pada Tabel \ref{tbl:sedangkan_sehingga}.
+Pada \textit{threshold} rendah ($\tau < 0{,}50$), sistem bersifat terlalu selektif sehingga banyak foto yang seharusnya dikembalikan tidak dikembalikan (\textit{false negative} tinggi, \textit{recall} rendah). Sebaliknya, pada \textit{threshold} tinggi ($\tau > 0{,}70$), sistem bersifat terlalu longgar sehingga banyak foto yang seharusnya tidak dikembalikan ikut dikembalikan (\textit{false positive} tinggi, \textit{precision} rendah). Nilai $\tau = 0{,}60$ memberikan keseimbangan optimal antara \textit{Precision} dan \textit{Recall}, menghasilkan $F_1$-\textit{score} tertinggi.
 
+\subsection{Hasil Pengujian Performa}
 
-\subsection{Penggunaan Istilah yang Tidak Baku}
-Ada beberapa istilah yang sering digunakan dalam pembicaraan sehari-hari, tetapi tidak baku dalam penulisan ilmiah.
-Beberapa istilah tersebut antara lain:
+Tabel \ref{tab:hasil performa} merangkum hasil pengukuran waktu komputasi \textit{pipeline} sistem terhadap 1.000 foto (total $\pm$7.843 wajah terdeteksi):
+
+\begin{table}[H]
+    \caption{Hasil Pengukuran Waktu Komputasi \textit{Pipeline} (1.000 Foto)}
+    \label{tab:hasil performa}
+    \begin{tabularx}{\textwidth}{|l|X|X|}
+    \hline
+    \textbf{Tahap} & \textbf{Waktu per Satuan} & \textbf{Total} \\ \hline
+    \textit{Face Detection} (SCRFD) & $\pm$0,077 detik/foto & $\pm$77 detik \\ \hline
+    \textit{Face Alignment} (afin) & $\pm$0,001 detik/wajah & $<$10 detik \\ \hline
+    \textit{Feature Extraction} (ArcFace ONNX, \textit{batch} 16) & $\pm$0,075 detik/\textit{batch} & $\pm$30 detik \\ \hline
+    \textit{Cache} I/O (JSON) & $\pm$0,001 detik/wajah & $\pm$8 detik \\ \hline
+    \textit{Search} (kosinus, $\pm$7.843 \textit{embedding}) & \multicolumn{2}{c|}{$<$0,1 detik} \\ \hline
+    \textbf{Total \textit{Indexing Pipeline}} & - & \textbf{$\pm$115–125 detik} \\ \hline
+    \end{tabularx}
+\end{table}
+
+Kecepatan rata-rata keseluruhan sistem adalah sekitar $0{,}115$–$0{,}125$ detik per foto, jauh di bawah batas yang ditetapkan dalam parameter keberhasilan ($<$1 detik per foto). Fase pencarian (\textit{search}) selesai dalam waktu kurang dari 0,1 detik untuk $\pm$7.843 \textit{embedding} karena menggunakan operasi perkalian matriks tervektor (\texttt{np.dot}) yang memanfaatkan instruksi SIMD CPU.
+
+\subsection{Hasil Pengujian Stabilitas}
+
+Sistem berhasil mempertahankan keberlangsungan pemrosesan saat menghadapi berkas foto yang rusak. Foto yang tidak dapat dibaca oleh OpenCV dilewati secara senyap (\textit{silently skipped}) tanpa menghentikan proses pengindeksan. Mekanisme \textit{fallback} resolusi progresif juga berjalan dengan benar, foto yang beresolusi sangat tinggi ($>$1.080px) diproses pada resolusi yang direduksi secara bertahap (960px $\rightarrow$ 720px $\rightarrow$ 512px $\rightarrow$ 360px), dengan koordinat \textit{bounding box} dan \textit{keypoint} yang diskalakan kembali ke ruang koordinat gambar asli sebelum dilakukan \textit{alignment}.
+
+\section{Pembahasan Hasil Evaluasi}
+
+\subsection{Pemenuhan Parameter Keberhasilan}
+
+Berdasarkan hasil evaluasi yang telah dilakukan, seluruh parameter keberhasilan yang ditetapkan pada Bab IV terpenuhi:
+
 \begin{enumerate}
-  \item analisa $\rightarrow$ analisis
-  \item eksisting atau existing $\rightarrow$ yang ada atau saat ini
-  \item bisnis proses $\rightarrow$ proses bisnis
-  \item user $\rightarrow$ pengguna
-  \item system $\rightarrow$ sistem
-  \item database $\rightarrow$ basis data
-  \item aktifitas $\rightarrow$ aktivitas
-  \item efektifitas $\rightarrow$ efektivitas
-  \item sosial media $\rightarrow$ media sosial
+    \item \textbf{Akurasi $\geq 85\%$}: Sistem mencapai akurasi $96{,}8\%$, melampaui batas minimal sebesar $11{,}8$ poin persentase.
+
+    \item \textbf{Waktu Komputasi $< 1$ detik per foto}: Sistem mencapai rata-rata $\pm 0{,}115$ detik per foto (mencakup deteksi, \textit{alignment}, dan ekstraksi fitur), yaitu $\pm 8{,}7\times$ lebih cepat dari batas yang ditetapkan.
+
+    \item \textbf{Keberlangsungan pada Masukan Rusak}: Sistem berhasil mempertahankan pemrosesan saat menghadapi foto yang rusak maupun foto beresolusi sangat tinggi yang dapat menyebabkan \textit{out-of-memory}.
 \end{enumerate}
 
-\subsection{Pemisah Desimal dan Ribuan}
-Tanda pemisah desimal dalam bahasa Indonesia adalah tanda koma, contoh:
+\subsection{Analisis Pengaruh Optimasi ONNX Runtime}
+
+Peningkatan performa yang signifikan antara fase eksplorasi (berbasis \textit{DeepFace}/TensorFlow, $\pm$0,42 detik per foto) dan sistem produksi ($\pm$0,115 detik per foto) disebabkan oleh dua faktor utama:
+
 \begin{enumerate}
-  \item (Salah) Akurasi naik menjadi 50.6\% 
-  \item (Benar) Akurasi naik menjadi 50,6\% 
+    \item \textbf{Efisiensi \textit{Backend} ONNX Runtime}: ONNX Runtime menjalankan graf komputasi yang telah dioptimalkan secara langsung dalam \textit{runtime} C++ tanpa \textit{overhead} inisialisasi TensorFlow. Waktu inferensi per wajah turun dari 0,15–0,25 detik (\textit{DeepFace}) menjadi 0,008–0,020 detik (ONNX), peningkatan sebesar $\pm$10–15$\times$.
+
+    \item \textbf{Inferensi \textit{Batch}}: Pemrosesan dalam \textit{chunk} 16 foto per pemanggilan \texttt{session.run()} mereduksi \textit{overhead} eksekusi ONNX dari $\mathcal{O}(N)$ menjadi $\mathcal{O}\left(\lceil \frac{N}{16} \rceil\right)$. Untuk 1.000 foto dengan rata-rata $\pm$7,8 wajah per foto, jumlah pemanggilan \texttt{session.run()} turun dari $\pm$7.800 menjadi $\pm$490.
 \end{enumerate}
 
-\subsection{Daftar atau \textit{List}}
-Ada beberapa aturan penulisan daftar atau \textit{list} yang perlu diperhatikan, antara lain:
-\begin{enumerate}[a)]
-\item Jika memungkinkan, hindari penggunaan “bullet points” atau sejenisnya. Sebaiknya, gunakan angka (1, 2, 3, ...) atau huruf (a, b, c, …). Dengan demikian, pembaca dapat dengan mudah melihat jumlah \textit{item} atau \textit{list}. 
-\item Jika dalam daftar hanya ada satu item, tidak perlu menggunakan nomor urut.
-\item Penjelasan atau deskripsi suatu item sebaiknya menyatu dengan judul item tersebut, tidak berbeda halaman. Contoh yang salah: judul item ada di halaman 10, namun deskripsinya di halaman 11. Sebaiknya pindahkan judul tersebut ke halaman 11.
-\item Jika penjelasan atau deskripsi suatu item cukup panjang, misalnya lebih dari 1 halaman atau terdiri atas beberapa paragraf, sebaiknya setiap item tersebut dijadikan judul subbab, kecuali jika level subbab sudah mencapai level 4. 
-\end{enumerate}
+\subsection{Keterbatasan Sistem yang Teridentifikasi}
 
-\subsection{Penggunaan Kata "masing-masing" dan "setiap"}
-Kata “masing-masing” digunakan di belakang kata yang diterangkan, misalnya 
-"Setiap proses menggunakan algoritma masing-masing". Kata “tiap-tiap” atau “setiap”
-ditempatkan di depan kata yang diterangkan, misalnya
-"Setiap proses menggunakan algoritma tertentu".
+Berdasarkan hasil evaluasi, terdapat beberapa keterbatasan sistem yang perlu diperhatikan:
+
+\begin{enumerate}
+    \item \textbf{Sensitivitas terhadap Kualitas Foto Kueri}: Akurasi pencarian sangat bergantung pada kualitas foto \textit{selfie} yang digunakan sebagai kueri. Foto dari sudut samping, resolusi sangat rendah, atau dengan oklusi (kacamata, masker wajah) dapat meningkatkan tingkat \textit{false negative}.
+
+    \item \textbf{Kueri Tunggal per Sesi}: Sistem hanya mendukung satu foto \textit{selfie} sebagai kueri per sesi pencarian. Tidak tersedia mekanisme penggabungan beberapa foto kueri menjadi satu representasi \textit{embedding} yang lebih kuat.
+
+    \item \textbf{Format Berkas Terbatas}: Pemindai berkas hanya mengenali ekstensi \texttt{.jpg}, \texttt{.jpeg}, dan \texttt{.png}. Format lain seperti \texttt{.heic} dan \texttt{.webp} tidak didukung pada versi ini.
+
+    \item \textbf{Invalidasi \textit{Cache} Manual}: Sistem tidak mendeteksi perubahan pada foto yang telah diindeks. Apabila foto dimodifikasi setelah diindeks, pengguna harus menghapus direktori \texttt{.face\_cache/} dan menjalankan ulang pengindeksan untuk memperbarui entri \textit{cache}.
+\end{enumerate}

@@ -15,7 +15,7 @@ Bagian ini akan menjelaskan hasil analisis dari kondisi saat ini terkait dengan 
 \subsection{Analisis Proses Bisnis Pencarian Foto Pribadi}
 Pada kondisi saat ini, pengguna digital sering kali memiliki kumpulan foto yang disimpan dalam ruang penyimpanan lokal ataupun \textit{cloud}. Dengan meningkatnya jumlah foto yang disimpan dalam ruang penyimpanan tersebut, semakin sulit bagi pengguna untuk mengelolanya, apalagi jika ruang penyimpanan menyimpan selain foto pengguna. Ketika pengguna ingin mencari foto pribadi (Foto yang mengandung wajah diri pengguna) dari ruang penyimpanan tersebut, pengguna akan kesulitan untuk menyaring antara foto pribadi dengan foto lainnya. Oleh karena itu, diperlukan analisis mendalam untuk mengetahui perilaku pengguna dalam menyaring foto tersebut.
 
-\begin{figure}[h] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
+\begin{figure}[t] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur Pencarian Foto dari Ruang Penyimpanan} 
 	\label{fig:pencarian foto}
     	\includegraphics[width=0.7\textwidth]{images/B3-Kondisi Saat Ini.png}
@@ -29,16 +29,17 @@ Proses pencarian/penyaringan foto secara manual ini memiliki kekurangan. Dengan 
 Berdasarkan hasil analisis kondisi saat ini dari sistem, maka akan dilakukan penyusunan kebutuhan (\textit{Requirement}) untuk membantu dalam perancangan solusi. Kebutuhan akan dibagi menjadi dua, yaitu kebutuhan fungsional (\textit{Functional Requirement}) dan kebutuhan nonfungsional (\textit{Non-Functional Requirement}).
 
 \subsection{Kebutuhan Fungsional}
+
+\input tables/FR-table.tex
+
 Berdasarkan hasil analisis kondisi, diperlukan suatu sistem yang dapat menyelesaikan permasalahan utama yang didapat. Sistem yang dirancang harus dapat memudahkan dan memangkas waktu tunggu pengguna dalam mencari/menyaring foto pribadi yang disimpan baik dalam ruang penyimpanan lokal ataupun \textit{cloud}. 
 
 Kebutuhan fungsional mencakup fungsi-fungsi utama yang harus dimiliki oleh sistem dalam memenuhi tujuan penggunaannya. Kebutuhan fungsional sistem yang dirancang harus dapat menerima kumpulan foto pengguna dalam satu masukan untuk nantinya dilakukan penyaringan didalamnya. Selanjutnya, sistem harus dapat mengidentifikasi foto pribadi dari kumpulan foto yang didapat dari masukan pengguna sebelumnya. Terakhir, sistem harus dapat memisahkan foto pribadi yang telah diidentifikasi dan memasukkanya dalam satu daftar sebagai keluaran dari sistem, sehingga pengguna dapat mengunduh hasil pencarian/penyaringan. Semua kebutuhan fungsional tersebut telah dirangkum dan diberi kode identifikasi dalam Tabel \ref{tab:kebutuhan fungsional} untuk memudahkan dalam dokumentasi.
 
-\input tables/FR-table.tex
+\input tables/NF-table.tex
 
 \subsection{Kebutuhan Nonfungsional}
 Selain fungsi-fungsi utama sistem yang telah didefinisikan sebelumnya, diperlukan kebutuhan nonfungsional sebagai fungsi pendukung untuk menentukan bagaimana sistem harus beroperasi. Kebutuhan ini berupa kebutuhan nonfungsional yang mencakup karakteristik kualitas dan batasan sistem. Kebutuhan nonfungsional mencakup aspek \textit{Performance} (kinerja), \textit{reliability} (keandalan), dan \textit{scalability} (skalabilitas). Semua kebutuhan nonfungsional telah dirangkum dan diberi kode identifikasi dalam Tabel \ref{tab:kebutuhan nonfungsional} untuk memudahkan dalam dokumentasi.
-
-\input tables/NF-table.tex
 
 \subsection{\textit{Use Case} Diagram}
 Berdasarkan kebutuhan fungsional yang telah didefinisikan, diperlukan analisis untuk mengetahui bagaimana fungsionalitas sistem dari perspektif pengguna. Untuk menggambarkannya, digunakan \textit{use case} diagram yang menjelaskan apa yang dapat dilakukan pengguna terhadap sistem. Diagram ini menunjukkan hubungan antara aktor (pengguna) dengan \textit{use case} (fungsi utama) yang dapat dilakukan oleh sistem.
@@ -76,8 +77,6 @@ Setelah melakukan berbagai eksplorasi terhadap peluang penggunaan teknologi untu
 
 Berdasarkan peluang teknologi yang dijelaskan pada bagian sebelumnya, teknologi yang paling relevan untuk digunakan pada kasus ini adalah \textit{face recognition}. Inti dari permasalah utama adalah identifikasi. Solusi yang dipilih harus mampu mendeteksi dan mengelompokkan foto yang mengandung wajah diri pengguna. Dari ketiga peluang teknologi, hanya \textit{face recognition} yang secara definisi merupakan metode biometrik yang dapat mengidentifikasi atau memverifikasi seseorang dengan membandingkan pola fitur wajah. Ini menjadikan \textit{face recognition} satu-satunya solusi yang secara spesifik menargetkan identitas individu, bukan hanya kemiripan visual umum atau konteks foto.
 
-Selain itu, sistem ini dapat mengimplementasikan konsep \textit{One-Shot Learning} yang dijelaskan pada Bagian II.4. Dalam OSL, sistem harus dapat membuat prediksi yang benar meskipun hanya diberikan satu contoh dari kelas baru. Penggunaan satu foto \textit{selfie} sebagai data acuan \textit{query} untuk membandingkan dengan seluruh kumpulan foto adalah aplikasi langsung dari paradigma OSL. Algoritma \textit{face recognition} modern, seperti yang menggunakan \textit{Siamese Network} atau \textit{Triplet Loss} memang dirancang untuk mempelajari fungsi kesamaan ini.
-
 Dua peluang teknologi lain yang sempat dipertimbangkan tidak mampu memenuhi kebutuhan yang telah didefinisikan sebelumnya. Pada CBIR, pendekatan ini hanya mengukur kesamaan berdasarkan karakteristik visual tingkat rendah seperti warna, tekstur, atau bentuk secara umum. CBIR tidak dapat mengukur kesamaan identitas wajah yang spesifik, sehingga gagal memisahkan foto pengguna dengan foto orang lain yang mungkin memiliki latar belakang atau pencahayaan yang mirip. Sedangkan, pendekatan berbasis atribut atau objek semantik, hanya berfokus pada penyaringan berdasarkan konteks atau objek dalam foto (misalnya, mencari foto di pantai, atau foto yang memakai kacamata). Meskipun dapat mempersempit hasil, metode ini tidak mampu memverifikasi identitas pengguna secara biometrik. Analisis antara peluang teknologi dapat dilihat dengan rangkum dan terstruktur di Tabel \ref{tab:alternatif_solusi}
 
 Berdasarkan hasil analisis, pendekatan berbasis \textit{face recognition} dengan \textit{one-shot learning} adalah solusi yang paling relevan dan efektif karena kelebihan utamanya terletak pada kemampuan untuk melakukan identifikasi spesifik individu. Meskipun memerlukan komputasi yang lebih tinggi, metode ini secara langsung menjawab tujuan sistem untuk menyaring dan mengelompokkan foto berdasarkan identitas wajah pengguna. Oleh karena itu, eksplorasi selanjutnya akan difokuskan pada penentuan algoritma \textit{face recognition} yang paling akurat untuk mengatasi variasi kondisi foto.
@@ -98,13 +97,13 @@ Algoritma \textit{face recognition} standar sering kali mengalami penurunan perf
   Foto-foto yang tersimpan dalam ruang penyimpanan pengguna memiliki intensitas cahaya yang tidak seragam (misalnya foto \textit{indoor}, \textit{outdoor}, atau \textit{low-light}). Perubahan pencahayaan ini mengubah distribusi nilai piksel wajah secara drastis, sehingga algoritma berbasis fitur tradisional atau linear sering kali gagal memetakan wajah tersebut ke dalam vektor representasi yang konsisten dengan kueri selfie.
   
   \item \textbf{Variasi Pose dan Ekspresi} \\
-  Berbeda dengan foto kueri yang berupa selfie frontal (menghadap ke depan), foto target dalam basis data sering kali diambil secara kandid (candid), miring (non-frontal), atau dengan ekspresi wajah yang ekstrem. Algoritma yang tidak memiliki fitur \textit{face alignment} yang kuat akan menghasilkan jarak Euclidean atau kosinus yang jauh, sehingga menyebabkan tingginya angka penolakan palsu (\textit{False Reject Rate}).
+  Berbeda dengan foto kueri yang berupa selfie frontal (menghadap ke depan), foto target dalam basis data sering kali diambil secara kandid (\textit{candid}), miring (non-frontal), atau dengan ekspresi wajah yang ekstrem. Algoritma yang tidak memiliki fitur \textit{face alignment} yang kuat akan menghasilkan jarak \textit{Euclidean} atau kosinus yang jauh, sehingga menyebabkan tingginya angka penolakan palsu (\textit{False Reject Rate}).
 
   \item \textbf{Oklusi} \\
   Wajah pengguna pada foto target sering kali tertutup sebagian oleh objek lain, seperti kacamata, masker, rambut, atau intervensi tangan. Hambatan visual ini membuang sebagian informasi geometri wajah, yang dapat mengecoh algoritma jika model terlalu bergantung pada fitur wajah global secara utuh.
 
   \item \textbf{Masalah Skala Spasial Resolusi Ekstrem} \\
-  Citra digital dunia nyata sering kali memiliki resolusi sangat tinggi ($\ge 8\text{ MP}$ atau resolusi $4\text{K}$). Proses inferensi menggunakan detektor wajah standar pada resolusi asli ini menyebabkan lonjakan drastis pada komputasi grafis dan memicu Out of Memory (OOM) pada spesifikasi perangkat keras standar. Oleh karena itu, diperlukan mekanisme Progressive Resolution Fallback Cascade untuk mereduksi skala citra secara adaptif ke resolusi maksimal $1080\text{p}$ ($1920 \times 1080$ piksel) sebelum proses deteksi dilakukan.
+  Citra digital dunia nyata sering kali memiliki resolusi sangat tinggi ($\ge 8\text{ MP}$ atau resolusi $4\text{K}$). Proses inferensi menggunakan detektor wajah standar pada resolusi asli ini menyebabkan lonjakan drastis pada komputasi grafis dan memicu \textit{Out of Memory} (OOM) pada spesifikasi perangkat keras standar. Oleh karena itu, diperlukan mekanisme \textit{Progressive Resolution Fallback Cascade} untuk mereduksi skala citra secara adaptif ke resolusi maksimal $1080\text{p}$ ($1920 \times 1080$ piksel) sebelum proses deteksi dilakukan.
 
 \end{enumerate}
 
@@ -113,10 +112,10 @@ Algoritma \textit{face recognition} standar sering kali mengalami penurunan perf
 Penggunaan paradigma \textit{one-shot learning} menuntut adanya kompromi yang besar antara akurasi model dengan kapasitas komputasi yang tersedia. Beberapa permasalahan efisiensi sumber daya yang diidentifikasi meliputi:
 
 \begin{enumerate}
-  \item \textbf{Tingginya Kompleksitas Komputasi Deep Learning} \\
-  Algoritma modern berbasis Convolutional Neural Network (CNN) dalam fase ekstraksi fitur (\textit{face representation}) membutuhkan operasi \textit{floating-point} yang sangat masif. Jika sistem dijalankan pada spesifikasi perangkat keras standar tanpa bantuan \textit{Graphics Processing Unit} (GPU) eksternal, waktu pemrosesan rata-rata per foto berisiko menjadi lebih lambat.
+  \item \textbf{Tingginya Kompleksitas Komputasi \textit{Deep Learning}} \\
+  Algoritma modern berbasis \textit{Convolutional Neural Network} (CNN) dalam fase ekstraksi fitur (\textit{face representation}) membutuhkan operasi \textit{floating-point} yang sangat masif. Jika sistem dijalankan pada spesifikasi perangkat keras standar tanpa bantuan \textit{Graphics Processing Unit} (GPU) eksternal, waktu pemrosesan rata-rata per foto berisiko menjadi lebih lambat.
 
-  \item \textbf{Tantangan Skalabilitas Memori (Memory Footprint)} \\
+  \item \textbf{Tantangan Skalabilitas Memori (\textit{Memory Footprint})} \\
   Ketika pengguna memasukkan dataset dalam jumlah besar, proses pemuatan citra, deteksi \textit{bounding box}, hingga konversi menjadi feature vector berdimensi tinggi secara berurutan (\textit{batch processing}) berpotensi menyebabkan kegagalan memori (\textit{Out of Memory}).
 
   \item \textbf{Efisiensi Struktur Basis Data Vektor} \\

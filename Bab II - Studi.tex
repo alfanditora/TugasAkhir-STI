@@ -10,9 +10,7 @@ Teknologi ini memiliki beragam aplikasi, mulai dari sistem keamanan rumah, penga
 Meskipun populer, \textit{face recognition} tetap menjadi salah satu tantangan biometrik yang paling kompleks, terutama ketika diterapkan di lingkungan yang tidak terkendali (\textit{in-the-wild}). Hal ini disebabkan oleh tingginya variabilitas yang dapat muncul pada gambar wajah, seperti perbedaan pose kepala, penuaan, oklusi (misalnya masker atau kacamata), kondisi pencahayaan, serta ekspresi wajah.
 
 \section{Alur dan Komponen Sistem \textit{Face Recognition}}
-Sistem pengenalan wajah biasanya terdiri dari beberapa \textit{building blocks} atau komponen utama. Menurut \textcite{Albayati2024}, secara umum, alur \textit{Face Recognition} (\textit{face recognition}) melibatkan tiga teknik kunci, yaitu deteksi wajah, ekstraksi fitur, dan pengenalan wajah (Gambar \ref{fig:face recognition}). Secara lebih rinci, alur \textit{face recognition} mencakup empat tahapan inti, yaitu deteksi wajah, penyelarasan wajah, representasi wajah (ekstraksi fitur), dan pencocokan wajah \autocite{Trigueros2018}.
-
-Berikut adalah penjelasan setiap komponen beserta teknik-teknik yang terkait.
+Sistem pengenalan wajah biasanya terdiri dari beberapa \textit{building blocks} atau komponen utama. Menurut \textcite{Albayati2024}, secara umum, alur \textit{face recognition} melibatkan tiga teknik kunci, yaitu deteksi wajah, ekstraksi fitur, dan pengenalan wajah (Gambar \ref{fig:face recognition}). Secara lebih rinci, alur \textit{face recognition} mencakup empat tahapan inti, yaitu deteksi wajah, penyelarasan wajah, representasi wajah (ekstraksi fitur), dan pencocokan wajah \autocite{Trigueros2018}.
 
 \begin{figure}[t] % pilihan opsi yang disarankan: t = top, b = bottom, h = here
   \caption{Alur \textit{Face Recognition} secara umum} 
@@ -20,34 +18,87 @@ Berikut adalah penjelasan setiap komponen beserta teknik-teknik yang terkait.
     	\includegraphics[width=0.7\textwidth]{images/FR-component.png}
 \end{figure}
 
-\subsection{Deteksi Wajah (\textit{Face Detection})}
+\section{Deteksi Wajah (\textit{Face Detection})}
 Tahapan ini bertujuan untuk mendeteksi keberadaan wajah pada citra digital. Sistem akan menemukan posisi wajah dan mengembalikan koordinat kotak pembatas (\textit{bounding box}) untuk setiap wajah yang terdeteksi. Keberhasilan tahap ini sangat penting karena menjadi masukan bagi tahap selanjutnya, dan kinerjanya dapat dipengaruhi oleh variasi pencahayaan serta pose wajah \autocite{Albayati2024}.
 
-\subsection{Pra-pemrosesan dan Normalisasi (\textit{Preprocessing and Alignment})}
-Setelah wajah terdeteksi, tahap penyelarasan (\textit{alignment}) atau pemrosesan wajah dilakukan. Tujuannya adalah untuk menyesuaikan skala, rotasi, dan memotong gambar wajah secara konsisten guna mengatasi masalah yang disebabkan oleh variasi pose, pencahayaan, dan oklusi \autocite{Trigueros2018}.
+Algoritma deteksi wajah berbasis \textit{deep learning} umumnya dikelompokkan menjadi dua pendekatan besar berdasarkan mekanisme penentuan kandidat wajah, yaitu pendekatan \textit{anchor-based} dan pendekatan \textit{anchor-free}. Pendekatan \textit{anchor-based} menempatkan sejumlah kotak referensi (\textit{anchor boxes}) berukuran dan rasio tertentu pada setiap lokasi citra, kemudian jaringan memprediksi pergeseran (\textit{offset}) serta skor klasifikasi terhadap setiap \textit{anchor} tersebut. Sebaliknya, pendekatan \textit{anchor-free} memprediksi langsung titik pusat atau batas objek dari setiap lokasi pada peta fitur tanpa bergantung pada kotak referensi yang telah ditentukan sebelumnya, sehingga mengurangi jumlah \textit{hyperparameter} terkait desain \textit{anchor} serta menurunkan kompleksitas komputasi pada tahap pasca-pemrosesan seperti \textit{Non-Maximum Suppression} (NMS). MTCNN merupakan representasi pendekatan \textit{anchor-based}, sedangkan SCRFD merupakan representasi pendekatan \textit{anchor-free}.
 
-Proses ini biasanya memerlukan penemuan satu set titik-titik penting wajah (\textit{facial landmarks}). Teknik yang umum digunakan meliputi:
+\subsection{MTCNN (\textit{Multi-task Cascaded Convolutional Networks})}
 
-\begin{enumerate}[a.]
-\item Penyelarasan 2D \\
-Menggunakan transformasi afin (\textit{affine transformation}), yaitu jenis transformasi geometris yang mempertahankan garis lurus dan perbandingan jarak namun tidak selalu mempertahankan sudut atau panjang. Transformasi ini digunakan untuk menyesuaikan wajah berdasarkan titik referensi \textit{landmark}. Pendekatan ini relatif sederhana dan efisien untuk mengoreksi rotasi serta pergeseran posisi wajah.
-\item Frontalisasi Wajah 3D \\
-Merupakan algoritma yang lebih kompleks yang mampu mengubah pose wajah non-frontal (miring) menjadi pose frontal (menghadap ke depan). Teknik ini meningkatkan konsistensi representasi wajah pada berbagai sudut pandang. Metode ini umumnya memanfaatkan model 3D wajah atau \textit{deep neural network} untuk merekonstruksi struktur wajah secara lebih akurat, sehingga hasil normalisasi wajah tetap mempertahankan karakteristik penting meskipun terjadi variasi pose yang signifikan.
-\item Normalisasi \textit{ Many-to-One} \\
-Bertujuan untuk memulihkan citra wajah yang terstandardisasi (misalnya wajah frontal) dari beberapa citra non-frontal. Pendekatan ini sering digunakan untuk meningkatkan kualitas data sebelum tahap ekstraksi fitur. Dalam praktiknya, metode ini dapat melibatkan rekonstruksi berbasis model 3D, penyelarasan multi-\textit{view}, atau teknik pembelajaran mendalam yang menggabungkan informasi dari berbagai sudut pandang untuk menghasilkan representasi wajah yang lebih konsisten, stabil, dan informatif.
+MTCNN diusulkan menurut \textcite{zhang2016joint} sebagai kerangka kerja deteksi dan penyelarasan wajah secara bersamaan (\textit{joint detection and alignment}), dengan memanfaatkan korelasi inheren antara kedua tugas tersebut untuk saling meningkatkan kinerja satu sama lain. Prinsip kerja utama MTCNN terletak pada arsitektur kaskade (\textit{cascaded architecture}) tiga tahap yang memproses citra secara bertingkat dari kasar (\textit{coarse}) menuju halus (\textit{fine}):
+
+\begin{enumerate}
+	\item \textbf{\textit{Proposal Network} (P-Net)}
+	
+	Jaringan konvolusional dangkal yang dengan cepat menghasilkan kandidat wajah awal beserta perkiraan kotak pembatasnya dari citra yang telah diubah dalam berbagai skala (\textit{image pyramid}), untuk mengantisipasi wajah berukuran berbeda-beda.
+
+	\item \textbf{\textit{Refine Network (R-Net)}}
+	
+	Jaringan penyaring kandidat hasil P-Net dengan menolak sebagian besar kandidat yang bukan wajah (\textit{false positive}) serta memperhalus posisi kotak pembatas yang tersisa.
+
+	\item \textbf{\textit{Output Network} (O-Net)}
+	
+	Tahap akhir yang menghasilkan keputusan akhir keberadaan wajah, regresi kotak pembatas yang lebih presisi, sekaligus memprediksi lokasi lima titik \textit{landmark} wajah (kedua mata, hidung, dan dua sudut mulut) dalam satu proses keluaran.
+	
 \end{enumerate}
 
-\subsection{Ekstraksi Fitur Wajah / Representasi Wajah (\textit{Feature Extraction / Face Representation})}
-Pada tahap representasi wajah, nilai piksel dari citra wajah diubah menjadi sebuah vektor fitur yang ringkas dan diskriminatif, yang juga dikenal sebagai \textit{template}. Secara ideal, seluruh citra wajah dari subjek yang sama seharusnya dipetakan ke vektor fitur yang memiliki kemiripan satu sama lain \autocite{Trigueros2018}. Penjelasan lebih detail mengenai komponen ini akan dijelaskan pada Bagian II.3.
+Ketiga jaringan tersebut dilatih secara \textit{multi-task} untuk memprediksi tiga hal sekaligus dalam satu kali proses, yaitu klasifikasi wajah/bukan-wajah, regresi kotak pembatas, dan lokalisasi \textit{landmark}, sehingga deteksi dan penyelarasan kasar wajah dapat diperoleh dalam satu alur pemrosesan yang saling melengkapi. MTCNN turut memperkenalkan strategi \textit{online hard sample mining} yang secara otomatis memfokuskan pelatihan pada sampel-sampel sulit, tanpa memerlukan pemilihan sampel secara manual, sehingga akurasi model dapat meningkat tanpa intervensi tambahan \autocite{zhang2016joint}.
 
-\subsection{Pencocokan Wajah (\textit{Face Matching / Classification})}
-Pada tahap \textit{face matching}, sistem membandingkan dua \textit{template} wajah untuk menghasilkan skor kemiripan yang menunjukkan seberapa besar kemungkinan kedua template tersebut berasal dari individu yang sama \autocite{Trigueros2018}. Proses ini memanfaatkan representasi fitur mendalam yang diperoleh dari arsitektur CNN modern seperti AlexNet, VGGNet, GoogleNet, ResNet, dan SENet, yang telah terbukti memberikan performa unggul dalam tugas pengenalan wajah \autocite{Albayati2024}. 
+\subsection{SCRFD (\textit{Sample and Computation Redistribution for Face Detection})}
 
-Dalam penerapannya, \textit{face matching} dapat melibatkan berbagai jenis jaringan, termasuk jaringan dengan kemampuan multi-tugas maupun jaringan multi-\textit{input}. Beberapa penelitian menunjukkan bahwa menggabungkan hasil dari beberapa jaringan dapat memberikan peningkatan kinerja yang signifikan dibandingkan penggunaan satu jaringan saja \autocite{Albayati2024}. Dengan demikian, proses pencocokan wajah tidak hanya bergantung pada perhitungan skor kemiripan semata, tetapi juga pada kualitas dan keragaman representasi fitur yang digunakan untuk perbandingan.
+SCRFD diusulkan menurut \textcite{guo2021scrfd} sebagai pendekatan deteksi wajah \textit{anchor-free} yang dirancang untuk mencapai kompromi terbaik antara akurasi dan efisiensi komputasi. Berbeda dengan MTCNN yang memproses citra secara bertahap melalui tiga jaringan terpisah, SCRFD bekerja dalam satu jaringan tunggal (\textit{single-stage detector}) yang dioptimalkan melalui dua strategi utama:
 
-\section{\textit{Face Representation Methods}}
+\begin{enumerate}
+	\item \textbf{\textit{Sample Redistribution} (SR) }
+	
+	Berfungsi untuk menambah proporsi sampel pelatihan pada tahap-tahap jaringan yang paling membutuhkan, berdasarkan statistik distribusi skala wajah pada kumpulan data acuan, sehingga jaringan lebih mampu mendeteksi wajah berukuran kecil pada citra beresolusi rendah.
+	
+	\item \textbf{\textit{Computation Redistribution} (CR)}
+	
+	Berfungsi untuk mengalokasikan ulang beban komputasi antara bagian \textit{backbone}, \textit{neck}, dan \textit{head} dari jaringan, melalui metodologi pencarian arsitektur (\textit{architecture search}) yang dirancang secara sistematis, alih-alih menggunakan distribusi komputasi yang seragam seperti pada arsitektur konvensional.
 
-\textit{Face Representation} merupakan komponen inti dalam sistem pengenalan wajah, dan efektivitasnya sangat bergantung pada kemampuan sistem dalam menghasilkan representasi wajah yang kuat dan diskriminatif. Menurut \textcite{Trigueros2018}, secara tegas menyatakan bahwa representasi wajah bisa dibilang merupakan komponen terpenting dari sistem pengenalan wajah. Hal ini menegaskan bahwa kualitas representasi menentukan keberhasilan setiap tahap dalam proses identifikasi maupun verifikasi.
+\end{enumerate}
+
+Pada tahap pemadanan kandidat wajah, SCRFD memanfaatkan \textit{Adaptive Training Sample Selection} (ATSS) untuk menentukan sampel positif secara adaptif berdasarkan statistik sebaran objek, alih-alih menggunakan ambang batas \textit{Intersection over Union} (IoU) yang tetap seperti pada pendekatan \textit{anchor-based} klasik. Fungsi \textit{loss} yang digunakan adalah \textit{Generalised Focal Loss} (GFL) untuk cabang klasifikasi dan \textit{Distance-IoU Loss} (DIoU) untuk cabang regresi kotak pembatas. Kombinasi strategi ini menjadikan SCRFD mampu mencapai kompromi akurasi-efisiensi yang unggul (\textit{state-of-the-art efficiency-accuracy trade-off}) dibandingkan metode \textit{anchor-based} sejenis, terutama pada rentang anggaran komputasi yang rendah, sehingga relevan digunakan pada aplikasi dengan kendala sumber daya seperti perangkat \textit{edge} atau aplikasi \textit{desktop offline} \autocite{guo2021scrfd}.
+
+\subsection{Perbandingan Prinsip Kerja dan \textit{Trade-off}}
+
+Secara prinsip, perbedaan mendasar antara MTCNN dan SCRFD terletak pada penentuan kandidat wajah dan jumlah tahap pemrosesan. MTCNN, sebagai metode \textit{anchor-based} bertahap, cenderung memiliki latensi yang lebih tinggi karena citra harus melewati tiga jaringan terpisah secara berurutan, namun keunggulannya terletak pada kesederhanaan implementasi dan kematangan dukungan pustaka. Sebaliknya, SCRFD sebagai metode \textit{anchor-free} satu tahap memproses deteksi dan estimasi landmark secara lebih efisien dalam satu kali proses, sehingga unggul dari sisi kecepatan inferensi, terutama pada pemrosesan citra dalam jumlah besar. Selain itu, presisi lokasi yang dihasilkan SCRFD relatif lebih konsisten karena tidak dibatasi oleh diskretisasi ukuran dan rasio \textit{anchor} yang telah ditentukan sebelumnya, sehingga kualitas potongan wajah (\textit{crop}) yang dihasilkan cenderung lebih baik sebagai masukan bagi komponen representasi wajah pada tahap selanjutnya.
+
+\section{Pra-pemrosesan dan Normalisasi (\textit{Preprocessing and Alignment})}
+
+Setelah wajah terdeteksi, tahap penyelarasan (\textit{alignment}) atau pemrosesan wajah dilakukan. Tujuannya adalah untuk menyesuaikan skala, rotasi, dan memotong gambar wajah secara konsisten guna mengatasi masalah yang disebabkan oleh variasi pose, pencahayaan, dan oklusi \autocite{Trigueros2018}.
+
+Penyelarasan ini penting karena variasi pose dan sudut pengambilan gambar dapat memperbesar perbedaan dalam-kelas (\textit{intra-class variance}) apabila tidak dinormalisasi terlebih dahulu, sehingga menurunkan akurasi komponen representasi wajah pada tahap berikutnya \autocite{wang2021deep}.
+
+Pendekatan 2D yang umum digunakan untuk penyelarasan wajah memanfaatkan sepasang himpunan titik \textit{landmark}: titik yang terdeteksi pada citra wajah (\textit{source points}) dan titik referensi tetap (\textit{reference/target points}) yang merepresentasikan tata letak wajah ideal. Transformasi geometris kemudian dihitung untuk memetakan titik sumber sedekat mungkin ke titik referensi tersebut. Dua jenis transformasi yang umum digunakan untuk keperluan ini adalah transformasi \textit{affine} (\textit{affine transformation}) dan transformasi kesamaan (\textit{similarity transformation}).
+
+\subsection{\textit{Affine Transformation}}
+
+Transformasi \textit{affine} adalah transformasi geometris yang mempertahankan sifat garis lurus dan paralelisme antar garis, namun tidak selalu mempertahankan sudut maupun panjang. Transformasi ini memiliki enam derajat kebebasan (6 \textit{Degrees of Freedom}, 6-DoF), yang mencakup translasi, rotasi, penskalaan (\textit{scaling}), perubahan rasio aspek (\textit{aspect ratio}), dan pencondongan (\textit{shear}). Secara umum, transformasi affine dapat dinyatakan dalam bentuk perkalian matriks dan penjumlahan vektor translasi sebagaimana pada Persamaan \ref{eq:affine}.
+
+\begin{equation}
+\begin{bmatrix} x' & y' \end{bmatrix} = \begin{bmatrix} a & b; & c & d \end{bmatrix} \cdot \begin{bmatrix} x & y \end{bmatrix} + \begin{bmatrix} t_x & t_y \end{bmatrix}
+\label{eq:affine}
+\end{equation}
+
+dengan $\begin{bmatrix} x & y \end{bmatrix}$ adalah koordinat titik pada citra asal, dan $\begin{bmatrix} x' & y' \end{bmatrix}$ adalah koordinat titik hasil transformasi, matriks $\begin{bmatrix} a & b; & c & d \end{bmatrix}$ mengatur rotasi, penskalaan, dan pencondongan, serta $\begin{bmatrix} t_x & t_y \end{bmatrix}$ adalah vektor translasi. Untuk memperoleh matriks transformasi ini, diperlukan minimal tiga pasang titik korespondensi yang membentuk sebuah sistem persamaan linear, yang kemudian diselesaikan agar titik-titik sumber berpindah sedekat mungkin dengan titik-titik referensi. Karena memiliki enam derajat kebebasan, transformasi \textit{affine} mampu menangani distorsi bentuk yang lebih kompleks dibandingkan transformasi kesamaan, namun risikonya adalah kemampuannya mengubah rasio aspek wajah secara berlebihan apabila titik landmark yang terdeteksi kurang presisi, sehingga berpotensi mendistorsi proporsi wajah asli \autocite{wang2021deep,Zhao2003}.
+
+\subsection{\textit{Similarity Transformation}}
+
+Transformasi kesamaan (\textit{similarity transformation}) merupakan kasus khusus dari transformasi affine yang membatasi derajat kebebasan menjadi empat (4 \textit{Degrees of Freedom}, 4-DoF), yaitu translasi, rotasi, dan penskalaan seragam (\textit{uniform scaling}), tanpa melibatkan pencondongan atau perubahan rasio aspek. Karena penskalaannya bersifat seragam pada seluruh sumbu, transformasi ini termasuk dalam kelompok transformasi tegar (\textit{rigid transformation}) yang diperluas dengan faktor skala, sehingga bentuk relatif antar titik \textit{landmark} (proporsi wajah) tetap terjaga setelah transformasi diterapkan \autocite{wang2021deep}.
+
+Berbeda dari transformasi \textit{affine} yang memerlukan minimal tiga titik korespondensi, transformasi kesamaan secara teoretis dapat diestimasi dari minimal dua titik \textit{landmark}, meskipun penggunaan lima titik (kedua mata, hidung, dan dua sudut mulut) lebih umum dipakai pada metode \textit{face recognition} modern karena memberikan estimasi yang lebih stabil. Pendekatan ini banyak digunakan pada metode representasi wajah berbasis \textit{deep learning} seperti \textit{ArcFace} dan \textit{FaceNet}, karena rasio aspek wajah yang konsisten lebih krusial dipertahankan dibandingkan kemampuan menangani distorsi bentuk yang kompleks, sehingga membantu menjaga karakteristik geometris wajah tetap proporsional sebelum masuk ke tahap ekstraksi fitur.
+
+\subsection{Perbandingan Prinsip Kerja dan \textit{Trade-off}}
+
+\textit{Trade-off} utama antara kedua jenis transformasi terletak pada jumlah derajat kebebasan yang digunakan. Transformasi \textit{affine}, dengan enam derajat kebebasan, lebih fleksibel dalam menyesuaikan distorsi bentuk wajah yang kompleks akibat variasi pose atau sudut pengambilan gambar, namun fleksibilitas tersebut juga membawa risiko terjadinya distorsi rasio aspek wajah yang tidak diinginkan, terutama apabila estimasi titik \textit{landmark} kurang akurat. Sebaliknya, transformasi kesamaan, dengan hanya empat derajat kebebasan, lebih terbatas dalam menangani distorsi bentuk, namun keterbatasan ini justru menjadi keunggulan karena proporsi asli wajah tetap terjaga, sehingga representasi fitur yang dihasilkan pada tahap berikutnya menjadi lebih konsisten dan dapat diprediksi. Karena alasan inilah, sebagian besar metode \textit{deep learning} untuk representasi wajah modern cenderung memilih transformasi kesamaan sebagai metode penyelarasan standar, sedangkan transformasi \textit{affine} lebih banyak digunakan pada konteks yang memang menuntut koreksi bentuk yang lebih agresif, seperti normalisasi pose non-frontal menuju pose frontal \autocite{wang2021deep}.
+
+\section{Ekstraksi Fitur Wajah (\textit{Feature Extraction / Face Representation})}
+
+Pada tahap representasi wajah, nilai piksel dari citra wajah diubah menjadi sebuah vektor fitur yang ringkas dan diskriminatif, yang juga dikenal sebagai \textit{template}. Secara ideal, seluruh citra wajah dari subjek yang sama seharusnya dipetakan ke vektor fitur yang memiliki kemiripan satu sama lain \autocite{Trigueros2018}.
+
+\textit{Face representation} merupakan komponen inti dalam sistem pengenalan wajah, dan efektivitasnya sangat bergantung pada kemampuan sistem dalam menghasilkan representasi wajah yang kuat dan diskriminatif. Menurut \textcite{Trigueros2018}, secara tegas menyatakan bahwa representasi wajah bisa dibilang merupakan komponen terpenting dari sistem pengenalan wajah. Hal ini menegaskan bahwa kualitas representasi menentukan keberhasilan setiap tahap dalam proses identifikasi maupun verifikasi.
 
 Pada tahap ini, citra wajah yang telah melalui proses deteksi dan penyelarasan diubah menjadi sebuah \textit{feature vector} yang ringkas dan mampu membedakan identitas satu individu dengan individu lainnya. Vektor ini berfungsi sebagai \textit{template} yang menjadi dasar proses pencocokan wajah. Tujuan utama dari representasi tersebut adalah memastikan bahwa seluruh citra wajah dari subjek yang sama, terlepas dari variasi sudut pandang, pencahayaan, atau ekspresi, dapat dipetakan ke \textit{feature vector} yang serupa. Tanpa representasi yang akurat dan konsisten, sistem tidak akan mampu melakukan identifikasi dengan baik.
 
@@ -55,74 +106,98 @@ Perkembangan teknologi pengenalan wajah pada dasarnya merupakan perjalanan panja
 
 Walaupun tahap deteksi dan penyelarasan memainkan peran penting dalam mempersiapkan citra masukan, kualitas akhir sistem tetap sangat bergantung pada kemampuan tahap representasi dalam menghasilkan \textit{features} yang benar-benar dapat membedakan identitas individu. Bahkan tahap pencocokan wajah, yang hanya menghitung tingkat kemiripan antara dua \textit{vectors}, sepenuhnya bergantung pada kualitas representasi tersebut. Jika representasi gagal membedakan dua individu yang berbeda, maka algoritma pencocokan yang paling canggih sekalipun tidak akan mampu menghasilkan identifikasi yang benar. Dengan demikian, \textit{Face Recognition} merupakan tahap yang sangat kritis dan menjadi fondasi utama bagi keberhasilan keseluruhan sistem pengenalan wajah \autocite{Trigueros2018}.
 
-\subsection{Metode Berbasis Geometri (\textit{Geometry-based Methods})}
-Penelitian awal mengenai pengenalan wajah, seperti yang dilakukan pada tahun 1970-an, berfokus pada metode yang menggunakan teknik pemrosesan citra untuk mencocokkan fitur-fitur sederhana yang menggambarkan geometri wajah. \textcite{Trigueros2018} menjelaskan bahwa metode ini mendeteksi lokasi serangkaian \textit{landmark} wajah (seperti mata, hidung, dan mulut) dan mengukur posisi relatif serta jarak di antara titik-titik tersebut. Meskipun metode ini memiliki keunggulan dalam kecepatan komputasi dan penggunaan memori yang rendah, akurasi pengenalannya umumnya lebih rendah dibandingkan metode yang menggunakan informasi gradien citra \autocite{Trigueros2018}.
+Metode representasi wajah dapat dikelompokkan ke dalam lima kategori besar berdasarkan strategi ekstraksi fiturnya, yaitu metode berbasis geometri, metode holistik, metode berbasis fitur lokal, metode hibrida, dan metode \textit{deep learning}.
 
-Karakteristik utama dari metode ini dimulai dengan tahap ekstraksi fitur lokal, di mana sistem secara otomatis mendeteksi lokasi titik-titik \textit{fiducial} penting pada wajah, seperti koordinat mata, hidung, mulut, dan kontur dagu, untuk menangkap konfigurasi topologis wajah \autocite{Brunelli1993}. Berdasarkan titik-titik tersebut, sistem kemudian menghitung serangkaian parameter geometris yang mencakup pengukuran kuantitatif berupa jarak antar fitur (seperti jarak interokular), ukuran komponen wajah, serta sudut-sudut relasional antar fitur \autocite{Zhao2003}. Seluruh data pengukuran ini selanjutnya dikompilasi menjadi sebuah vektor fitur numerik, seperti vektor 35-dimensi yang digunakan dalam eksperimen terkait yang merepresentasikan struktur wajah secara ringkas untuk digunakan dalam proses klasifikasi.
+\subsection{Metode Berbasis Geometri (\textit{Geometry-based Methods})}
+
+Metode berbasis geometri merupakan salah satu pendekatan paling awal dalam riset \textit{face recognition}, yang merepresentasikan wajah melalui sekumpulan parameter geometris yang diukur dari lokasi titik-titik fitur penting (\textit{fiducial points}) seperti mata, hidung, mulut, dan kontur dagu. Prinsip kerja metode ini diawali dengan deteksi lokasi titik-titik fitur tersebut, kemudian dihitung serangkaian parameter kuantitatif berupa jarak antar fitur (misalnya, jarak interokular), ukuran komponen wajah (misalnya, lebar dan panjang hidung), serta sudut-sudut relasional antar fitur, yang kemudian dikompilasi menjadi sebuah vektor fitur berdimensi rendah \autocite{Brunelli1993, Zhao2003}.
+
+\textcite{Brunelli1993} membandingkan pendekatan berbasis fitur geometris ini dengan pendekatan \textit{template matching} pada kumpulan data wajah yang sama, dan menemukan bahwa meskipun pendekatan geometris menghasilkan tingkat pengenalan yang cukup baik (sekitar 90\%), pendekatan \textit{template matching} menunjukkan performa yang lebih unggul pada kumpulan data pengujian yang digunakan. Keunggulan utama metode berbasis geometri terletak pada kecepatan komputasi yang tinggi dan kebutuhan memori yang rendah, karena vektor fiturnya hanya berisi sejumlah kecil nilai numerik dibandingkan representasi citra penuh. Namun demikian, akurasi pengenalannya sangat bergantung pada presisi deteksi titik fitur, sehingga rentan terhadap kesalahan apabila kondisi citra mengalami variasi pencahayaan, pose, atau ekspresi wajah yang signifikan, dan secara umum akurasinya lebih rendah dibandingkan metode yang memanfaatkan informasi tekstur atau gradien citra secara langsung \autocite{Trigueros2018}.
 
 \subsection{Metode Holistik (\textit{Holistic Methods})}
-Metode holistik merepresentasikan wajah menggunakan keseluruhan area wajah sebagai input. Pendekatan ini sering kali bekerja dengan memproyeksikan citra wajah ke dalam ruang berdimensi rendah untuk membuang detail yang tidak perlu. Salah satu pendekatan paling populer adalah \textit{Principal Component Analysis} (PCA) atau yang dikenal sebagai \textit{eigenfaces}, serta \textit{Linear Discriminant Analysis} (LDA) atau \textit{Fisherfaces} \autocite{Trigueros2018}.
 
-PCA bekerja dengan mencari proyeksi linier yang memaksimalkan total scatter (total sebaran) dari semua gambar wajah dalam database. Secara teknis, ini optimal untuk merekonstruksi gambar (\textit{reconstruction}) dari basis dimensi rendah \autocite{Belhumeur1997}. Wajah direpresentasikan sebagai kombinasi linier dari basis \textit{images} (\textit{eigenfaces}). Pengenalan dilakukan dengan mencocokkan bobot proyeksi citra baru dengan bobot yang ada di \textit{database} \autocite{Zhao2003}.
+Berbeda dengan metode berbasis geometri yang hanya menggunakan sebagian kecil titik fitur, metode holistik merepresentasikan wajah menggunakan keseluruhan area piksel wajah sebagai masukan. Prinsip kerja metode ini umumnya memproyeksikan citra wajah berdimensi tinggi ke dalam ruang berdimensi rendah yang lebih ringkas, dengan tujuan membuang informasi atau detail yang tidak relevan untuk proses pengenalan.
 
-LDA bertujuan untuk mencari matriks proyeksi $W$ yang memaksimalkan varians antar-kelas (\textit{between-class}) sekaligus meminimalkan varians dalam-kelas (\textit{within-class}). Berdasarkan \textcite{Trigueros2018}, fungsi tujuan untuk LDA dapat dituliskan pada Persamaan \ref{eq:lda}:
+\textit{Principal Component Analysis} (PCA), atau yang dikenal sebagai \textit{eigenfaces}, merupakan pendekatan holistik yang paling banyak digunakan. PCA bekerja dengan mencari arah proyeksi linear yang memaksimalkan total sebaran (\textit{total scatter}) dari seluruh data wajah, sehingga secara teknis optimal untuk merekonstruksi kembali citra (\textit{reconstruction}) dari representasi berdimensi rendah tersebut. Setiap wajah direpresentasikan sebagai kombinasi linear dari sejumlah basis citra (\textit{eigenfaces}), dan proses pengenalan dilakukan dengan mencocokkan bobot proyeksi dari citra baru terhadap bobot-bobot yang telah tersimpan dalam basis data \autocite{Belhumeur1997,Zhao2003}.
 
-\begin{equation}
-W^{*} = \arg \max_{W} \frac{|W^{T}S_{b}W|}{|W^{T}S_{w}W|}
-\label{eq:lda}
-\end{equation}
-
-$S_{b}$ adalah matriks \textit{scatter} antar-kelas dan $S_{w}$ adalah matriks \textit{scatter} dalam-kelas. Metode holistik lain yang juga dikembangkan meliputi \textit{Support Vector Machines} (SVM) dan \textit{Sparse Representation-based Classification} (SRC).
+Keunggulan utama PCA terletak pada kesederhanaan implementasi serta efisiensi dalam merepresentasikan variasi data secara keseluruhan menggunakan jumlah komponen yang relatif sedikit. Namun, karena PCA bersifat \textit{unsupervised} dan mengoptimalkan rekonstruksi citra secara umum (bukan secara spesifik memaksimalkan keterpisahan antar identitas), metode ini cenderung sensitif terhadap variasi pencahayaan, ekspresi, dan pose, karena variasi-variasi tersebut dapat mendominasi komponen utama (\textit{principal components}) yang dihasilkan, alih-alih variasi yang berkaitan dengan perbedaan identitas wajah \autocite{Belhumeur1997}.
 
 \subsection{Metode Berbasis Fitur (\textit{Feature-based Methods})}
-Berbeda dengan metode holistik, metode berbasis fitur memanfaatkan fitur lokal yang diekstraksi dari berbagai lokasi pada citra wajah. Metode ini cenderung lebih tangguh (\textit{robust}) terhadap variasi lokal seperti ekspresi wajah atau pencahayaan \autocite{Trigueros2018}. Contoh populer dari metode ini termasuk \textit{Local Binary Patterns} (LBP), SIFT, dan Gabor wavelets.
 
-Dalam penggunaan histogram deskriptor LBP, kemiripan antara dua vektor fitur $a$ dan $b$ sering kali diukur menggunakan jarak \textit{Chi-square} berbobot, sebagaimana ditunjukkan pada Persamaan \ref{eq:chisquare}:
+Berbeda dengan metode holistik yang memproses citra wajah secara keseluruhan, metode berbasis fitur memanfaatkan fitur lokal yang diekstraksi dari berbagai lokasi spesifik pada citra wajah, sehingga cenderung lebih tangguh (\textit{robust}) terhadap variasi lokal seperti ekspresi wajah atau pencahayaan yang tidak merata \autocite{Trigueros2018}.
 
-\begin{equation}
-\chi^{2}(a,b) = \sum_{i} \frac{w_{i}(a_{i}-b_{i})^{2}}{a_{i}+b_{i}}
-\label{eq:chisquare}
-\end{equation}
+\textit{Local Binary Patterns} (LBP) bekerja dengan membandingkan nilai intensitas setiap piksel terhadap piksel-piksel tetangganya dalam suatu wilayah lokal (misalnya, wilayah 3×3 piksel), menghasilkan suatu kode biner yang merepresentasikan pola tekstur lokal di sekitar piksel tersebut. Distribusi kode-kode biner ini kemudian dikumpulkan dalam bentuk histogram untuk setiap wilayah (\textit{region}) pada citra wajah, dan seluruh histogram wilayah digabungkan menjadi satu vektor fitur tunggal yang merepresentasikan tekstur wajah secara keseluruhan. Karena hanya membandingkan intensitas relatif antar piksel tetangga (bukan nilai intensitas absolut), LBP relatif tangguh terhadap perubahan pencahayaan monoton (misalnya, perubahan kecerahan global), namun representasi histogramnya cenderung berdimensi tinggi dan kurang optimal dalam menangkap struktur tepi (\textit{edge}) berskala besar pada wajah \autocite{ahonen2006face,Trigueros2018}.
 
-$w_{i}$ adalah bobot yang mengontrol kontribusi koefisien ke-$i$ dari vektor fitur \autocite{Trigueros2018}.
+\textit{Histogram of Oriented Gradients} (HOG), diusulkan oleh \textcite{dalal2005histograms}, bekerja dengan menghitung gradien intensitas citra pada setiap piksel, kemudian mengelompokkan orientasi gradien tersebut ke dalam histogram untuk setiap sel (\textit{cell}) kecil pada citra. Histogram-histogram dari sel-sel yang berdekatan kemudian dikelompokkan dan dinormalisasi dalam blok (\textit{block}) yang saling tumpang tindih (\textit{overlapping}), bertujuan menjaga invariansi terhadap perubahan pencahayaan dan bayangan lokal. Prinsip dasar HOG adalah bahwa bentuk dan tampilan suatu objek lokal sering kali dapat dideskripsikan dengan baik melalui distribusi arah tepi atau gradien intensitasnya, sehingga HOG unggul dalam menangkap struktur kontur wajah seperti garis rahang, alis, dan bentuk hidung. HOG awalnya dirancang untuk deteksi pejalan kaki, namun terbukti efektif diadaptasi untuk representasi wajah karena kemampuannya menangkap struktur bentuk secara lebih eksplisit dibandingkan LBP yang berfokus pada tekstur \autocite{albiol2008face,dalal2005histograms}.
+
+\textit{Trade-off} antara LBP dan HOG terletak pada jenis informasi visual yang ditangkap: LBP lebih unggul dalam merepresentasikan tekstur permukaan kulit dan pola lokal yang halus, sedangkan HOG lebih unggul dalam merepresentasikan bentuk dan kontur wajah secara struktural. Kedua metode ini relatif ringan secara komputasi dibandingkan metode \textit{deep learning}, namun keduanya tetap merupakan fitur hasil rancangan manual (\textit{hand-crafted features}) yang tidak dipelajari secara otomatis dari data, sehingga kemampuan generalisasinya terhadap variasi kondisi citra yang ekstrem (pose ekstrem, oklusi berat) relatif terbatas dibandingkan representasi yang dipelajari (\textit{learned representation}) oleh jaringan saraf tiruan.
 
 \subsection{Metode Hibrida (\textit{Hybrid Methods})}
-Metode hibrida menggabungkan teknik dari metode holistik dan berbasis fitur untuk mendapatkan keuntungan dari kedua pendekatan tersebut. Pendekatan hibrida yang paling umum adalah mengekstraksi fitur lokal (seperti LBP atau SIFT) dan kemudian memproyeksikannya ke dalam sub-ruang berdimensi rendah yang diskriminatif menggunakan PCA atau LDA \autocite{Trigueros2018}.
 
-Sebagai contoh, \textcite{Trigueros2018} menyebutkan metode yang menggunakan representasi wajah berdimensi tinggi dengan mengekstraksi deskriptor \textit{multi-scale} LBP di sekitar \textit{landmark} wajah, yang kemudian direduksi dimensinya. Optimasi proyeksi matriks linear jarang ($B$) pada metode hibrida tertentu dapat diformulasikan sebagai masalah minimisasi berikut:
+Metode hibrida menggabungkan teknik dari metode berbasis fitur dan metode holistik, dengan tujuan memperoleh keunggulan dari kedua pendekatan tersebut sekaligus. Prinsip kerja umumnya diawali dengan mengekstraksi fitur lokal (misalnya menggunakan LBP) dari citra wajah, kemudian fitur lokal berdimensi tinggi tersebut diproyeksikan ke dalam sub-ruang berdimensi rendah yang lebih ringkas dan diskriminatif menggunakan teknik reduksi dimensi holistik seperti PCA \autocite{Trigueros2018}.
+
+Kombinasi LBP + PCA bekerja dengan terlebih dahulu mengekstraksi histogram LBP dari citra wajah sebagaimana dijelaskan pada bagian II.5.3, kemudian vektor histogram tersebut yang umumnya berdimensi tinggi karena terdiri atas gabungan histogram dari banyak wilayah lokal direduksi dimensinya menggunakan PCA untuk membuang redundansi informasi dan derau (\textit{noise}), sekaligus mempercepat proses pencocokan pada tahap selanjutnya. Pendekatan ini berupaya mengatasi salah satu kelemahan utama PCA murni, yaitu sensitivitasnya terhadap variasi piksel mentah, dengan terlebih dahulu mengekstraksi representasi tekstur lokal yang lebih tangguh melalui LBP, sebelum reduksi dimensi dilakukan.
+
+\textit{Trade-off} dari pendekatan hibrida ini adalah peningkatan kompleksitas komputasi dibandingkan penggunaan LBP atau PCA secara terpisah, karena memerlukan dua tahap pemrosesan berurutan. Namun, kompleksitas tambahan ini umumnya sepadan dengan peningkatan akurasi yang diperoleh, karena kombinasi fitur lokal yang tangguh terhadap variasi tekstur dengan reduksi dimensi yang menghilangkan redundansi cenderung menghasilkan representasi yang lebih ringkas dan lebih diskriminatif dibandingkan kedua metode penyusunnya bila digunakan sendiri-sendiri \autocite{Trigueros2018}.
+
+\subsection{Metode \textit{Deep Learning} (\textit{Deep Learning Methods})}
+
+Metode berbasis \textit{deep learning}, khususnya jaringan saraf konvolusional (\textit{Convolutional Neural Network}, CNN), menjadi standar terkini dalam representasi wajah karena kemampuannya mempelajari fitur secara otomatis dan langsung dari data pelatihan berskala besar, alih-alih bergantung pada fitur hasil rancangan manual seperti pada metode geometri, holistik, maupun berbasis fitur lokal. Prinsip kerja umumnya adalah melatih jaringan untuk memetakan citra wajah ke dalam suatu ruang embedding berdimensi rendah, di mana jarak antar vektor \textit{embedding} merepresentasikan tingkat kemiripan identitas. Perbedaan utama antar arsitektur \textit{deep learning} terletak pada desain \textit{backbone} jaringan dan fungsi \textit{loss} yang digunakan untuk melatihnya \autocite{Trigueros2018}.
+
+VGG-Face, diusulkan oleh \textcite{parkhi2015deep}, memanfaatkan arsitektur \textit{Very Deep Convolutional Networks} (VGGNet) yang dilatih pada kumpulan data wajah berskala besar untuk menghasilkan representasi yang diskriminatif. Karakteristik VGGNet adalah penggunaan tumpukan lapisan konvolusi berukuran kecil (3×3) secara berurutan dan mendalam, sehingga menghasilkan medan reseptif (\textit{receptive field}) yang besar sembari mempertahankan jumlah parameter yang relatif terkendali. \textit{Trade-off} utama arsitektur ini adalah jumlah parameter dan kebutuhan memori yang relatif besar dibandingkan arsitektur lain yang lebih efisien, karena kedalaman jaringan dan lebar lapisan (\textit{feature map}) yang besar membutuhkan alokasi memori untuk aktivasi antara (\textit{intermediate activation}) yang signifikan.
+
+FaceNet, diusulkan oleh \textcite{schroff2015facenet}, memperkenalkan pendekatan \textit{unified embedding} yang memetakan citra wajah secara langsung ke ruang \textit{Euclidean} berdimensi rendah, dengan jarak antar \textit{embedding} merepresentasikan tingkat kemiripan wajah secara langsung tanpa memerlukan lapisan klasifikasi tambahan. FaceNet dilatih menggunakan \textit{Triplet Loss}, yang mengoptimalkan jaringan agar jarak antara sampel \textit{anchor} dengan sampel identitas yang sama (\textit{positive}) lebih kecil dibandingkan jarak dengan sampel identitas berbeda (\textit{negative}) dengan margin tertentu. \textit{Trade-off} utama pendekatan \textit{Triplet Loss} adalah proses pelatihan yang relatif kompleks, karena memerlukan strategi pemilihan triplet yang tepat (\textit{triplet mining}) agar pelatihan dapat konvergen secara efektif, mengingat jumlah kombinasi triplet yang mungkin tumbuh secara kubik terhadap ukuran data pelatihan \autocite{schroff2015facenet}.
+
+ArcFace (\textit{Additive Angular Margin Loss}), diusulkan oleh \textcite{deng2019arcface}, memodifikasi fungsi \textit{Softmax} konvensional dengan menambahkan margin sudut (\textit{angular margin}) secara aditif pada sudut antara fitur dan bobot kelas yang bersesuaian di ruang hiperbola (\textit{hypersphere}). Berbeda dengan \textit{Triplet Loss} yang membandingkan jarak antar tiga sampel sekaligus, ArcFace bekerja layaknya fungsi klasifikasi pada umumnya namun dengan penalti margin geometris yang eksplisit, sehingga proses pelatihannya relatif lebih stabil dan tidak memerlukan strategi \textit{mining triplet} yang rumit. Penambahan margin secara aditif pada sudut, alih-alih pada nilai kosinus seperti pendekatan sejenis (misalnya, CosFace), memberikan ArcFace interpretasi geometris yang konsisten dengan jarak busur (\textit{geodesic distance}) pada permukaan hiperbola, sehingga representasi fitur yang dihasilkan menjadi lebih kompak pada kelas yang sama (\textit{intra-class compactness}) sekaligus lebih terpisah antar kelas yang berbeda (\textit{inter-class discrepancy}) dibandingkan fungsi loss berbasis Softmax konvensional maupun \textit{Triplet Loss} \autocite{deng2019arcface}.
+
+\textit{Trade-off} umum dari ketiga arsitektur \textit{deep learning} tersebut terletak pada keseimbangan antara kapasitas representasi (yang umumnya berkorelasi dengan ukuran model dan kebutuhan memori) dan efisiensi komputasi. VGG-Face cenderung menghasilkan representasi dengan kapasitas tinggi namun pada beban memori yang besar; FaceNet menghasilkan \textit{embedding} yang ringkas namun proses pelatihannya menuntut strategi \textit{triplet mining} yang lebih rumit; sedangkan ArcFace menawarkan kestabilan pelatihan serta kemampuan diskriminatif yang tinggi melalui penalti margin sudut yang eksplisit, dengan kebutuhan memori \textit{inference} yang relatif ringan karena ukuran embedding yang ringkas (umumnya 512 dimensi), menjadikannya pilihan yang umum pada aplikasi dengan kendala sumber daya.
+
+\section{Pencocokan Wajah (\textit{Face Matching})}
+
+Tahap \textit{face matching} (pencocokan wajah) adalah tahap akhir dalam alur \textit{face recognition}. Dua vektor \textit{embedding} wajah dibandingkan untuk menghasilkan suatu skor kemiripan (\textit{similarity score}) yang menunjukkan seberapa besar kemungkinan kedua \textit{embedding} tersebut berasal dari individu yang sama \autocite{Trigueros2018}. Dua metrik jarak/kemiripan yang paling umum digunakan untuk membandingkan vektor embedding wajah adalah kesamaan kosinus (\textit{cosine similarity}) dan jarak Euclidean (\textit{Euclidean distance}).
+
+\subsection{\textit{Cosine Similarity}}
+
+Kesamaan kosinus mengukur kosinus sudut antara dua vektor pada ruang berdimensi-n, tanpa memperhitungkan magnitudo (panjang) dari masing-masing vektor. Diberikan dua vektor \textit{embedding} A dan B, kesamaan kosinus dirumuskan pada Persamaan \ref{eq:cosine}.
 
 \begin{equation}
-\min_{B} ||Y - B^{T}X||_{2}^{2} + \lambda||B||_{1}
-\label{eq:hybridopt}
+\cos(A, B) = \frac{A \cdot B}{\|A\| \times \|B\|}
+\label{eq:cosine}
 \end{equation}
 
-Suku pertama adalah kesalahan rekonstruksi antara fitur dimensi tinggi $X$ dan fitur dimensi rendah $Y$, serta suku kedua memaksakan \textit{sparsity} pada matriks proyeksi $B$ \autocite{Trigueros2018}.
+dengan $A \cdot B$ adalah hasil perkalian titik (\textit{dot product}) antara kedua vektor, serta $\|A\|$ dan $\|B\|$ masing-masing adalah norma \textit{Euclidean} (panjang) dari vektor A dan B. Nilai kesamaan kosinus berada pada rentang $[-1, 1]$, dengan nilai $1$ menunjukkan kedua vektor memiliki arah yang identik, nilai $0$ menunjukkan tidak ada korelasi arah, dan nilai $-1$ menunjukkan arah yang berlawanan. Karena hanya memperhitungkan arah vektor (bukan magnitudonya), kesamaan kosinus secara alami invarian terhadap penskalaan (\textit{scale-invariant}), sehingga sangat sesuai digunakan pada representasi yang dihasilkan oleh model berbasis margin pada ruang hiperbola seperti ArcFace, di mana proses pelatihan model tersebut memang secara eksplisit mengoptimalkan sudut antar \textit{embedding}, bukan jaraknya secara absolut \autocite{deng2019arcface}.
 
-\subsection{Metode Deep Learning (\textit{Deep Learning Methods})}
+\subsection{\textit{Euclidean Similarity (Euclidean Distance)}}
 
-Metode berbasis \textit{neural networks} (yang menjadi fondasi \textit{deep learning}) didefinisikan sebagai pendekatan yang menggunakan arsitektur jaringan saraf tiruan untuk mempelajari representasi wajah secara otomatis dari data pelatihan. Pendekatan ini bertujuan untuk menawarkan kemampuan generalisasi yang lebih besar melalui pembelajaran (\textit{learning}) dibandingkan dengan metode linier standar seperti PCA atau LDA \autocite{Zhao2003}.
-
-Dalam perkembangannya, \textit{deep learning} digunakan untuk mengekstraksi fitur tingkat tinggi yang lebih bermakna (\textit{meaningful high-level features}) secara langsung dari citra, yang membantu menjembatani kesenjangan semantik (\textit{semantic gap}) yang sering dihadapi oleh metode ekstraksi fitur tradisional \autocite{qazanfari2023}.
-
-Metode \textit{Deep Learning}, khususnya \textit{Convolutional Neural Networks} (CNN), telah menjadi standar terkini dalam pengenalan wajah karena kemampuannya untuk belajar fitur yang tangguh dari data pelatihan berskala besar \autocite{Trigueros2018}. Salah satu aspek kunci dalam pelatihan CNN adalah fungsi \textit{loss}.
-
-Selain \textit{Softmax loss} standar, \textit{Triplet Loss} digunakan untuk memisahkan jarak antara pasangan positif dan negatif dengan margin tertentu. Kondisi yang harus dipenuhi untuk setiap \textit{triplet} dijelaskan pada Persamaan \ref{eq:triplet}:
+Jarak \textit{Euclidean} mengukur jarak garis lurus (\textit{straight-line distance}) antara dua titik pada ruang berdimensi-n, dan merupakan metrik jarak yang paling intuitif secara geometris. Diberikan dua vektor \textit{embedding} A dan B, jarak \textit{Euclidean} dirumuskan pada Persamaan \ref{eq:euclidean}.
 
 \begin{equation}
-||f(x_{a})-f(x_{p})||_{2}^{2} + \alpha < ||f(x_{a})-f(x_{n})||_{2}^{2}
-\label{eq:triplet}
+d(A, B) = \|A - B\| = \sqrt{\sum_{i=1}^{n} (A_i - B_i)^2}
+\label{eq:euclidean}
 \end{equation}
 
-$x_{a}$ adalah citra \textit{anchor}, $x_{p}$ adalah citra dari subjek yang sama (\textit{positive}), $x_{n}$ adalah citra dari subjek berbeda (\textit{negative}), dan $\alpha$ adalah margin \autocite{Trigueros2018}. Perkembangan terbaru juga memperkenalkan margin aditif atau multiplikatif ke dalam fungsi \textit{softmax} untuk meningkatkan kemampuan diskriminatif model.
+dengan $A_i$ dan $B_i$ adalah nilai komponen ke-$i$ dari masing-masing vektor $A$ dan $B$. Berbeda dengan kesamaan kosinus, jarak \textit{Euclidean} memperhitungkan baik arah maupun magnitudo vektor, sehingga nilai jarak ini dapat dipengaruhi oleh perbedaan skala atau normalisasi panjang vektor \textit{embedding}. Semakin kecil nilai jarak \textit{Euclidean}, semakin besar kemiripan antara dua wajah. Sebaliknya, nilai yang besar mengindikasikan identitas yang berbeda. Metrik ini umum digunakan pada model yang dilatih dengan fungsi loss berbasis jarak secara langsung, seperti \textit{Triplet Loss} pada FaceNet, karena proses pelatihannya memang secara eksplisit mengoptimalkan jarak \textit{Euclidean} antar \textit{embedding} \autocite{schroff2015facenet}.
 
+\subsection{Perbandingan Prinsip Kerja dan \textit{Trade-off}}
+
+\textit{Trade-off} mendasar antara kedua metrik ini terletak pada sensitivitas terhadap magnitudo vektor. Kesamaan kosinus mengabaikan magnitudo dan hanya berfokus pada arah, sehingga lebih tangguh terhadap perbedaan skala \textit{embedding} yang mungkin timbul akibat variasi kontras atau intensitas wajah, namun informasi mengenai seberapa kuat suatu fitur terdeteksi (yang tercermin dari magnitudo) menjadi hilang. Sebaliknya, jarak \textit{Euclidean} memperhitungkan magnitudo secara penuh, sehingga lebih sensitif terhadap variasi skala, namun dapat menangkap informasi tambahan apabila representasi \textit{embedding} memang tidak dinormalisasi terlebih dahulu.
+
+Dalam praktiknya, kedua metrik ini saling berkaitan erat: apabila vektor \textit{embedding} dinormalisasi terlebih dahulu hingga memiliki panjang satuan (\textit{unit length}, $\|A\| = \|B\| = 1$), maka jarak Euclidean kuadrat antara dua vektor tersebut menjadi fungsi linear langsung dari kesamaan kosinusnya, yaitu pada Persamaan \ref{eq:euclidean2}.
+
+\begin{equation}
+\|A - B\|^2 = 2 - 2 \cdot \cos(A, B)
+\label{eq:euclidean2}
+\end{equation}
+
+Dengan demikian, pemilihan salah satu metrik pada kondisi \textit{embedding} yang telah dinormalisasi pada dasarnya menghasilkan urutan pemeringkatan kemiripan (\textit{similarity ranking}) yang setara, dan perbedaannya hanya terletak pada skala serta interpretasi nilai ambang batas (\textit{threshold}) yang digunakan untuk menentukan kecocokan identitas \autocite{deng2019arcface}.
 
 \section{\textit{One-Shot Learning}}
-\textit{One-Shot Learning} (OSL) adalah sebuah pendekatan yang meniru kemampuan unik manusia untuk mengenali wajah hanya dengan satu kali lihat. Dalam banyak skenario dunia nyata, pengumpulan \textit{dataset} gambar wajah berskala besar sering kali sulit dilakukan. Pada umumnya, tugas identifikasi hanya memiliki satu atau sedikit sampel per individu. Metode \textit{deep learning} konvensional seperti \textit{Convolutional Neural Network} (CNN) biasanya memerlukan data pelatihan dalam jumlah besar dan cenderung berkinerja buruk jika dilatih dengan input yang sangat terbatas \autocite{Albayati2024}.
 
-Algoritma OSL dirancang untuk mengatasi masalah kelangkaan data tersebut. Dalam konteks pengenalan wajah, OSL bertujuan untuk mengembangkan sistem yang mampu belajar dan mengenali individu hanya dari satu gambar (atau satu sampel) per kelas.
+\textit{One-Shot Learning} (OSL) adalah paradigma inferensi di mana sebuah sistem mampu membuat prediksi yang benar meskipun hanya diberikan satu contoh dari kelas yang dituju, tanpa perlu melatih ulang model untuk kelas tersebut \autocite{Albayati2024}. Kemampuan ini meniru cara manusia mengenali wajah yang belum pernah dijumpai sebelumnya: cukup dengan satu kali melihat, manusia dapat mengenali wajah yang sama pada pertemuan berikutnya.
 
-Salah satu teknik yang umum digunakan untuk mencapai hal ini adalah \textit{Siamese Network}. Alih-alih melakukan klasifikasi gambar secara langsung, \textit{Siamese Network} dilatih untuk mempelajari fungsi kesamaan (\textit{similarity function}). Jaringan ini menerima dua gambar sebagai masukan dan menghasilkan skor yang menunjukkan seberapa mirip kedua gambar tersebut, apakah berasal dari orang yang sama atau tidak \autocite{Albayati2024}.
+Berbeda dengan pendekatan \textit{deep learning} konvensional yang memerlukan ratusan hingga ribuan sampel per individu untuk melatih sebuah \textit{classifier} baru, sistem berbasis OSL memanfaatkan model yang telah dilatih sebelumnya (\textit{pre-trained model}) pada kumpulan data wajah berskala besar untuk menghasilkan representasi fitur (\textit{embedding}) yang bersifat generik dan diskriminatif. Pada saat inferensi, model tidak dilatih ulang, melainkan \textit{embedding} dari satu sampel referensi langsung dibandingkan terhadap \textit{embedding} dari sampel-sampel target menggunakan metrik kemiripan \autocite{Albayati2024}.
 
+Dalam konteks Tugas Akhir ini, paradigma OSL diterapkan dalam bentuk \textit{one-shot query}: pengguna cukup memberikan satu foto \textit{selfie} sebagai acuan pencarian. \textit{Embedding} wajah dari foto \textit{selfie} tersebut diekstraksi oleh model \textit{pre-trained} dan kemudian dibandingkan terhadap \textit{embedding} seluruh wajah yang terdeteksi pada foto-foto dalam folder target. Foto-foto yang menghasilkan skor kemiripan di atas nilai ambang batas (\textit{threshold}) yang telah ditentukan akan dikembalikan sebagai hasil pencarian, tanpa memerlukan proses pelatihan atau pendaftaran identitas tambahan oleh pengguna.
 
 \section{\textit{Content-Based Image Retrieval} (CBIR)}
 
